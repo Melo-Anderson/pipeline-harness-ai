@@ -1,0 +1,26 @@
+# Python & Virtual Environment
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# Superpowers & Agentic metadata
+docs/superpowers/
+.superpowers/
+.gemini/
+.agents/
+
+# IDE & System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
