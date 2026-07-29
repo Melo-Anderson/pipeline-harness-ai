@@ -52,10 +52,16 @@ class MetricsPort(Protocol):
 class PlatformSchemaPort(Protocol):
     """Porta read-only para buscar JSON Schema do contrato YAML da plataforma."""
 
-    def get_json_schema(self) -> dict[str, Any]: ...
+    def get_json_schema(self, pipeline_type: str = "all") -> dict[str, Any]: ...
 
 
 class PlatformExamplesPort(Protocol):
     """Porta read-only para buscar gold examples YAML canônicos da plataforma."""
 
-    def get_gold_examples(self) -> dict[str, str]: ...
+    def get_gold_examples(self, pipeline_type: str = "all") -> dict[str, str]: ...
+
+
+class PlatformValidationPort(Protocol):
+    """Port: sends generated YAML to the platform CI validation suite."""
+    
+    def validate_pipeline_yaml(self, yaml_content: str, pipeline_type: str) -> Any: ...
