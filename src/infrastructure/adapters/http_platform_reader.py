@@ -26,10 +26,11 @@ class HttpPlatformReader(PlatformSchemaPort, PlatformExamplesPort):
         self._schema_url = schema_url
         self._examples_url = examples_url
 
-    def get_json_schema(self) -> dict[str, Any]:
-        """Retorna JSON Schema para validação estrutural do YAML gerado."""
+    def get_json_schema(self, pipeline_type: str = "all") -> dict[str, Any]:
+        """Busca o JSON Schema canonico."""
         try:
-            resp = httpx.get(self._schema_url, timeout=_TIMEOUT)
+            params = {"pipeline_type": pipeline_type} if pipeline_type != "all" else {}
+            resp = httpx.get(self._schema_url, params=params, timeout=_TIMEOUT)
             resp.raise_for_status()
             return resp.json()  # type: ignore[no-any-return]
         except Exception as exc:
@@ -38,10 +39,11 @@ class HttpPlatformReader(PlatformSchemaPort, PlatformExamplesPort):
             )
             return {}
 
-    def get_gold_examples(self) -> dict[str, str]:
-        """Retorna exemplos YAML canônicos por tipo de pipeline (few-shot anchors)."""
+    def get_gold_examples(self, pipeline_type: str = "all") -> dict[str, str]:
+        """Busca gold examples da plataforma."""
         try:
-            resp = httpx.get(self._examples_url, timeout=_TIMEOUT)
+            params = {"pipeline_type": pipeline_type} if pipeline_type != "all" else {}
+            resp = httpx.get(self._examples_url, params=params, timeout=_TIMEOUT)
             resp.raise_for_status()
             return resp.json()  # type: ignore[no-any-return]
         except Exception as exc:
