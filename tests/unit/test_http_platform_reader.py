@@ -1,58 +1,96 @@
-"""Tests para o HTTP adapter que busca contratos da plataforma."""
+from typing import Any
+import httpx
+import pytest
+import respx
+from src.infrastructure.adapters.http_platform_reader import HttpPlatformReader
+from src.config import settings
+from src.domain.ports import PlatformYamlPort
 
-from unittest.mock import MagicMock, patch
+@respx.mock
+def test_get_json_schema_success():
+    respx.get(f"{settings.platform_schema_url}?pipeline_type=ingestion").mock(
+        return_value=httpx.Response(200, json={"type": "object", "properties": {"$id": {"type": "string"}}})
+    )
+    reader = HttpPlatformReader(
+        settings.platform_schema_url,
+        settings.platform_examples_url,
+        settings.platform_pipeline_yaml_url_template
+    )
+    schema = reader.get_json_schema(pipeline_type="ingestion")
+    assert schema == {"type": "object", "properties": {"$id": {"type": "string"}}}
 
+@respx.mock
+def test_get_json_schema_failure_fallback():
+    respx.get(f"{settings.platform_schema_url}?pipeline_type=etl").mock(
+        return_value=httpx.Response(500)
+    )
+    reader = HttpPlatformReader(
+        settings.platform_schema_url,
+        settings.platform_examples_url,
+        settings.platform_pipeline_yaml_url_template
+    )
+    schema = reader.get_json_schema(pipeline_type="etl")
+    assert schema == {}
 
-@patch("src.infrastructure.adapters.http_platform_reader.httpx.get")
-def test_get_json_schema_fetches_from_url(mock_get: MagicMock) -> None:
-    from src.infrastructure.adapters.http_platform_reader import HttpPlatformReader
+@respx.mock
+def test_get_gold_examples_with_params():
+    url = f"{settings.platform_examples_url}?type=ingestion&compute_engine=spark&limit=5"
+    respx.get(url).mock(
+        return_value=httpx.Response(200, json={"examples": [{"id": 1}]})
+    )
+    reader = HttpPlatformReader(
+        settings.platform_schema_url,
+        settings.platform_examples_url,
+        settings.platform_pipeline_yaml_url_template
+    )
+    examples = reader.get_gold_examples(
+        pipeline_type="ingestion",
+        compute_engine="spark",
+        limit=5
+    )
+    assert examples == {"examples": [{"id": 1}]}
 
-    mock_resp = MagicMock()
-    mock_resp.json.return_value = {"type": "object", "properties": {"pipeline_id": {}}}
-    mock_resp.raise_for_status.return_value = None
-    mock_get.return_value = mock_resp
+@respx.mock
+def test_get_gold_examples_fallback():
+    url = f"{settings.platform_examples_url}?type=export&limit=3"
+    respx.get(url).mock(
+        return_value=httpx.Response(404)
+    )
+    reader = HttpPlatformReader(
+        settings.platform_schema_url,
+        settings.platform_examples_url,
+        settings.platform_pipeline_yaml_url_template
+    )
+    examples = reader.get_gold_examples(pipeline_type="export")
+    assert examples == {}
 
-    reader = HttpPlatformReader("http://schema-url", "http://examples-url")
-    schema = reader.get_json_schema()
+@respx.mock
+def test_get_pipeline_yaml_success():
+    pipeline_id = "p_sales"
+    url = settings.platform_pipeline_yaml_url_template.format(pipeline_id=pipeline_id)
+    respx.get(url).mock(
+        return_value=httpx.Response(200, json={"pipeline_id": "p_sales", "pipeline_yaml": "test"})
+    )
+    reader = HttpPlatformReader(
+        settings.platform_schema_url,
+        settings.platform_examples_url,
+        settings.platform_pipeline_yaml_url_template
+    )
+    assert isinstance(reader, PlatformYamlPort)
+    result = reader.get_pipeline_yaml(pipeline_id)
+    assert result == {"pipeline_id": "p_sales", "pipeline_yaml": "test"}
 
-    assert schema == {"type": "object", "properties": {"pipeline_id": {}}}
-    mock_get.assert_called_once_with("http://schema-url", timeout=10.0)
-
-
-@patch("src.infrastructure.adapters.http_platform_reader.httpx.get")
-def test_get_gold_examples_fetches_from_url(mock_get: MagicMock) -> None:
-    from src.infrastructure.adapters.http_platform_reader import HttpPlatformReader
-
-    mock_resp = MagicMock()
-    mock_resp.json.return_value = {"ingestion": "yaml...", "etl": "yaml..."}
-    mock_resp.raise_for_status.return_value = None
-    mock_get.return_value = mock_resp
-
-    reader = HttpPlatformReader("http://schema-url", "http://examples-url")
-    examples = reader.get_gold_examples()
-
-    assert "ingestion" in examples
-    mock_get.assert_called_once_with("http://examples-url", timeout=10.0)
-
-
-@patch("src.infrastructure.adapters.http_platform_reader.httpx.get")
-def test_get_json_schema_returns_fallback_on_error(mock_get: MagicMock) -> None:
-    from src.infrastructure.adapters.http_platform_reader import HttpPlatformReader
-
-    mock_get.side_effect = Exception("Connection refused")
-    reader = HttpPlatformReader("http://down-url", "http://examples-url")
-    schema = reader.get_json_schema()
-
-    # Fallback deve retornar um dict vazio (não lançar exceção)
-    assert isinstance(schema, dict)
-
-
-@patch("src.infrastructure.adapters.http_platform_reader.httpx.get")
-def test_get_gold_examples_returns_fallback_on_error(mock_get: MagicMock) -> None:
-    from src.infrastructure.adapters.http_platform_reader import HttpPlatformReader
-
-    mock_get.side_effect = Exception("Timeout")
-    reader = HttpPlatformReader("http://schema-url", "http://down-url")
-    examples = reader.get_gold_examples()
-
-    assert isinstance(examples, dict)
+@respx.mock
+def test_get_pipeline_yaml_fallback():
+    pipeline_id = "p_missing"
+    url = settings.platform_pipeline_yaml_url_template.format(pipeline_id=pipeline_id)
+    respx.get(url).mock(
+        return_value=httpx.Response(500)
+    )
+    reader = HttpPlatformReader(
+        settings.platform_schema_url,
+        settings.platform_examples_url,
+        settings.platform_pipeline_yaml_url_template
+    )
+    result = reader.get_pipeline_yaml(pipeline_id)
+    assert result is None

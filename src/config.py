@@ -9,7 +9,7 @@ class HarnessSettings(BaseSettings):
     openai_api_key: str = ""
     openai_model: str = "gpt-4o"
     openai_temperature: float = 0.0
-    platform_db_url: str = "sqlite:///:memory:"
+    platform_db_url: str = "postgresql+psycopg2://airflow:airflow@localhost:5432/platform_db"
     metrics_storage_path: str = "./data/metrics"
     max_iterations: int = 3
     langsmith_api_key: str = ""
@@ -19,9 +19,11 @@ class HarnessSettings(BaseSettings):
     llm_model: str = "gpt-4o"
     llm_temperature: float = 0.0
     llm_base_url: str | None = None
+    google_api_key: str = ""
     # Platform Contract Provider
     platform_schema_url: str = "http://localhost:8000/v1/harness/schema"
     platform_examples_url: str = "http://localhost:8000/v1/harness/gold-examples"
+    platform_pipeline_yaml_url_template: str = "http://localhost:8000/v1/harness/pipelines/{pipeline_id}/yaml"
 
 
 settings = HarnessSettings()

@@ -13,11 +13,21 @@ __pycache__/
 .env.*
 !.env.example
 
-# Superpowers & Agentic metadata
-docs/superpowers/
-.superpowers/
-.gemini/
-.agents/
+# Generated files
+generated/
+
+# Agent Instruction Files & Metadata
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+agents.md
+claude.md
+gemini.md
+
+# Hidden files and directories (dotfiles)
+.*
+.*/
+!.gitignore
 
 # IDE & System files
 .vscode/

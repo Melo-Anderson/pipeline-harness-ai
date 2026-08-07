@@ -4,7 +4,7 @@ from src.application.graph.edges import routing_edge
 
 
 def _s(errors: list[str], iteration: int, max_iter: int = 3) -> dict:  # type: ignore[type-arg]
-    return {"validation_errors": errors, "iteration_count": iteration, "_max_iterations": max_iter}
+    return {"raw_validation_errors": errors, "iteration_count": iteration, "_max_iterations": max_iter}
 
 
 def test_approved_when_no_errors() -> None:

@@ -11,8 +11,9 @@ from typing import Annotated, Any
 from langchain_core.messages import AnyMessage
 from langgraph.graph.message import add_messages
 
+from src.domain.schemas.harness_models import AuditTrail, PipelinePlan
 from src.domain.schemas.pipeline_spec import PipelineSpec
-from src.domain.schemas.harness_models import PipelinePlan, AuditTrail
+
 
 class HarnessState(dict):
     """Typed LangGraph state. dict subclass for LangGraph compatibility."""
@@ -25,7 +26,7 @@ class HarnessState(dict):
     validation_errors: list[str]
     iteration_count: int
     status: str  # in_progress | approved | failed_max_iterations
-    
+
     # New fields
     pipeline_plan: PipelinePlan | None
     raw_validation_errors: list[dict[str, str]]

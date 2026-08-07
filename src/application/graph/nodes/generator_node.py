@@ -15,6 +15,8 @@ from langchain_openai import ChatOpenAI
 from src.domain.schemas.pipeline_spec import PipelineSpec
 from src.domain.schemas.yaml_exporter import dump, format_feedback_prompt
 
+import re
+
 _SYSTEM_TEMPLATE = """\
 You are a precise Data Platform YAML Specification Generator.
 Generate a complete, valid PipelineSpec JSON for the requested pipeline.
@@ -26,6 +28,9 @@ Generate a complete, valid PipelineSpec JSON for the requested pipeline.
 
 ## Reference Examples of Correct YAML Structure:
 {few_shot_examples}
+
+CRITICAL REQUIREMENT:
+- pipeline_id is REQUIRED and must be a clean non-empty string identifier (e.g. 'p_ingest_customer_create').
 
 Follow the platform rules exactly. Do not add unknown fields. Do not omit required fields.
 """
@@ -68,7 +73,21 @@ def make_generator_node(llm: ChatOpenAI | None = None) -> Any:
 
         msgs = [SystemMessage(content=system), HumanMessage(content=human)]
         spec: PipelineSpec = structured.invoke(msgs)
-        return {"messages": msgs, "pipeline_spec": spec, "generated_yaml": dump(spec)}
+        
+        # Fallback de segurança: Garante pipeline_id não-vazio
+        if not spec.pipeline_id or not spec.pipeline_id.strip():
+            obj_name = ctx.get("object_name") or "pipeline"
+            clean_obj = re.sub(r"[^a-zA-Z0-9_]", "_", obj_name.lower())
+            p_type = ctx.get("pipeline_type") or "ingest"
+            spec.pipeline_id = f"p_{p_type}_{clean_obj}"
+
+        yaml_content = dump(spec)
+        return {
+            "messages": msgs,
+            "pipeline_spec": spec,
+            "output_yaml": yaml_content,
+            "generated_yaml": yaml_content,
+        }
 
     return generator_node
 

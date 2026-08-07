@@ -1,6 +1,9 @@
 from __future__ import annotations
+
 from typing import Any
+
 from src.config import settings
+
 
 def routing_edge(state: dict[str, Any]) -> str:
     errors: list[dict[str, str]] = state.get("raw_validation_errors", [])
@@ -11,6 +14,7 @@ def routing_edge(state: dict[str, Any]) -> str:
     if iteration >= max_iter:
         return "failed"
     return "retry"
+
 
 def hitl_routing_edge(state: dict[str, Any]) -> str:
     approved: bool | None = state.get("hitl_approved")

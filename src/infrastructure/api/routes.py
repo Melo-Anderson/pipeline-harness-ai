@@ -16,6 +16,7 @@ from src.application.graph.workflow import build_graph
 from src.config import settings
 from src.infrastructure.adapters.db_schema_reader import DbSchemaReader
 from src.infrastructure.adapters.http_platform_reader import HttpPlatformReader
+from src.infrastructure.adapters.http_platform_validation import HttpPlatformValidationAdapter
 from src.infrastructure.adapters.storage_metrics_reader import StorageMetricsReader
 from src.infrastructure.llm_factory import get_llm
 
@@ -24,6 +25,12 @@ router = APIRouter()
 _platform_reader = HttpPlatformReader(
     schema_url=settings.platform_schema_url,
     examples_url=settings.platform_examples_url,
+    yaml_url_template=settings.platform_pipeline_yaml_url_template,
+)
+
+_platform_validator = HttpPlatformValidationAdapter(
+    # Extract base URL by removing '/v1/harness/schema' from schema_url
+    base_url=settings.platform_schema_url.replace("/v1/harness/schema", "")
 )
 
 _graph = build_graph(
@@ -31,6 +38,7 @@ _graph = build_graph(
     metrics_port=StorageMetricsReader(base_path=settings.metrics_storage_path),
     schema_port=_platform_reader,
     examples_port=_platform_reader,
+    validation_port=_platform_validator,
     llm=get_llm(),
 )
 

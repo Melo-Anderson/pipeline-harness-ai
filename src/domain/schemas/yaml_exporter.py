@@ -41,6 +41,7 @@ def format_feedback_prompt(errors: list[str], iteration: int) -> str:
 def _build_dict(spec: PipelineSpec) -> dict:  # type: ignore[type-arg]
     return {
         "schema_version": spec.schema_version,
+        "pipeline_id": spec.pipeline_id,
         "pipeline": {
             "id": spec.pipeline_id,
             "name": spec.name,

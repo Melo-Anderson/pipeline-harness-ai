@@ -1,15 +1,20 @@
 from unittest.mock import MagicMock
+
 from src.application.graph.nodes.planner_node import make_planner_node
 from src.domain.schemas.harness_models import PipelinePlan
 
+
 def _plan(**kw: object) -> PipelinePlan:
     base: dict[str, object] = dict(
-        pipeline_type="relational", recommended_engine="spark",
-        worker_count_estimate=4, load_strategy="incremental",
+        pipeline_type="relational",
+        recommended_engine="spark",
+        worker_count_estimate=4,
+        load_strategy="incremental",
         watermark_column="updated_at",
     )
     base.update(kw)
     return PipelinePlan(**base)  # type: ignore[arg-type]
+
 
 def test_planner_returns_plan():
     mock_llm = MagicMock()
@@ -19,6 +24,7 @@ def test_planner_returns_plan():
     assert result["pipeline_plan"].pipeline_type == "relational"
     assert result["pipeline_plan"].load_strategy == "incremental"
     assert len(result["messages"]) == 2
+
 
 def test_planner_file_type():
     mock_llm = MagicMock()
