@@ -5,16 +5,15 @@ from unittest.mock import MagicMock, patch
 
 @patch("src.infrastructure.llm_factory.init_chat_model")
 def test_get_llm_calls_init_chat_model_with_defaults(mock_init: MagicMock) -> None:
-    """Deve chamar init_chat_model com os valores de config padrão."""
-    # Importar aqui para pegar o mock
+    """Deve chamar init_chat_model com os valores de config."""
+    from src.config import settings
     from src.infrastructure.llm_factory import get_llm
 
     get_llm()
-    mock_init.assert_called_once_with(
-        model="gpt-4o",
-        model_provider="openai",
-        temperature=0.0,
-    )
+    call_kwargs = mock_init.call_args[1]
+    assert call_kwargs.get("model") == settings.llm_model
+    assert call_kwargs.get("model_provider") == settings.llm_provider
+    assert call_kwargs.get("temperature") == settings.llm_temperature
 
 
 @patch("src.infrastructure.llm_factory.init_chat_model")

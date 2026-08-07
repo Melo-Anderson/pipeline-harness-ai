@@ -31,6 +31,7 @@ def generate(
     platform_reader = HttpPlatformReader(
         schema_url=settings.platform_schema_url,
         examples_url=settings.platform_examples_url,
+        yaml_url_template=settings.platform_pipeline_yaml_url_template,
     )
     graph = build_graph(
         metadata_port=DbSchemaReader(settings.platform_db_url),  # type: ignore[arg-type]

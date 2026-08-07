@@ -24,9 +24,21 @@ from src.config import settings
 
 def get_llm() -> BaseChatModel:
     """Retorna um BaseChatModel configurado via env vars (sem hardcoding de provider)."""
+    if settings.llm_provider == "fake":
+        from langchain_core.language_models.fake_chat_models import FakeListChatModel
+
+        return FakeListChatModel(
+            responses=[
+                '{"pipeline_type": "ingestion", "plan": "Plano de ingestão incremental"}',
+                "version: '1.0'\npipeline:\n  name: mock-pipeline\n  type: ingestion",
+            ]
+        )
+
     kwargs: dict[str, Any] = {}
     if settings.llm_base_url:
         kwargs["base_url"] = settings.llm_base_url
+    if settings.google_api_key:
+        kwargs["api_key"] = settings.google_api_key
 
     return init_chat_model(
         model=settings.llm_model,

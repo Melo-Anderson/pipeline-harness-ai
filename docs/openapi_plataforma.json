@@ -1,0 +1,2322 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Data Platform API",
+        "description": "Data platform — DataAsset, Endpoint, and Pipeline management.",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/v1/assets/": {
+            "post": {
+                "tags": [
+                    "assets"
+                ],
+                "summary": "Register Asset",
+                "description": "Register a new DataAsset in DRAFT state. No business logic in router.",
+                "operationId": "register_asset_v1_assets__post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssetCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssetResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/assets/{asset_name}": {
+            "get": {
+                "tags": [
+                    "assets"
+                ],
+                "summary": "Get Asset",
+                "description": "Retrieve a DataAsset by id. Visible to all roles.",
+                "operationId": "get_asset_v1_assets__asset_name__get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "asset_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Asset Name"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssetResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "assets"
+                ],
+                "summary": "Update Asset",
+                "description": "Update a DataAsset's fields. PO_PM only.",
+                "operationId": "update_asset_v1_assets__asset_name__put",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "asset_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Asset Name"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AssetUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssetResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/assets/{asset_name}/activate": {
+            "post": {
+                "tags": [
+                    "assets"
+                ],
+                "summary": "Activate Asset",
+                "description": "Transition asset DRAFT → ACTIVE. SRE only.",
+                "operationId": "activate_asset_v1_assets__asset_name__activate_post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "asset_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Asset Name"
+                        }
+                    },
+                    {
+                        "name": "endpoint_name",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Endpoint Name"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssetResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/endpoints/database": {
+            "post": {
+                "tags": [
+                    "endpoints"
+                ],
+                "summary": "Provision Database Endpoint",
+                "description": "Provision a DatabaseEndpoint. SRE and PO_PM allowed.",
+                "operationId": "provision_database_endpoint_v1_endpoints_database_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DatabaseEndpointCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EndpointResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/endpoints/nosql": {
+            "post": {
+                "tags": [
+                    "endpoints"
+                ],
+                "summary": "Provision Nosql Endpoint",
+                "description": "Provision a NoSqlEndpoint (MongoDB, DocumentDB, etc.). SRE and PO_PM allowed.",
+                "operationId": "provision_nosql_endpoint_v1_endpoints_nosql_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/NoSqlEndpointCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EndpointResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/endpoints/rest_api": {
+            "post": {
+                "tags": [
+                    "endpoints"
+                ],
+                "summary": "Provision Rest Api Endpoint",
+                "description": "Provision a RestApiEndpoint. SRE and PO_PM allowed.",
+                "operationId": "provision_rest_api_endpoint_v1_endpoints_rest_api_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RestApiEndpointCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EndpointResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/discovery/assets/{asset_name}/run": {
+            "post": {
+                "tags": [
+                    "Discovery"
+                ],
+                "summary": "Trigger Discovery Run",
+                "description": "Triggers a DiscoveryRun for a given asset.\nOrchestrates extraction, diffing, self-healing, and approval generation.",
+                "operationId": "trigger_discovery_run_v1_discovery_assets__asset_name__run_post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "asset_name",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Asset Name"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TriggerDiscoveryRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DiscoveryRunResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/discovery/approvals/{approval_id}/decision": {
+            "post": {
+                "tags": [
+                    "Discovery"
+                ],
+                "summary": "Decide Drift Approval",
+                "description": "Approve or reject a pending critical drift.\nPO_PM (Asset Owner) only.",
+                "operationId": "decide_drift_approval_v1_discovery_approvals__approval_id__decision_post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "approval_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Approval Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DriftDecisionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DriftApprovalResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/lineage/trace": {
+            "get": {
+                "tags": [
+                    "Lineage"
+                ],
+                "summary": "Get column-level lineage (upstream/downstream/both)",
+                "description": "Trace column-level lineage. Returns nodes upstream (provenance)\nand/or downstream (impact analysis).",
+                "operationId": "trace_lineage_v1_lineage_trace_get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "object_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "The DataObject ID to trace",
+                            "title": "Object Id"
+                        },
+                        "description": "The DataObject ID to trace"
+                    },
+                    {
+                        "name": "column_name",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "The column name to trace",
+                            "title": "Column Name"
+                        },
+                        "description": "The column name to trace"
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Direction to trace: upstream | downstream | both",
+                            "default": "upstream",
+                            "title": "Direction"
+                        },
+                        "description": "Direction to trace: upstream | downstream | both"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LineageGraphResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/pipelines/": {
+            "post": {
+                "tags": [
+                    "Pipelines"
+                ],
+                "summary": "Register Pipeline",
+                "operationId": "register_pipeline_v1_pipelines__post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreatePipelineRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PipelineResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/pipelines/{pipeline_id}": {
+            "get": {
+                "tags": [
+                    "Pipelines"
+                ],
+                "summary": "Get Pipeline",
+                "operationId": "get_pipeline_v1_pipelines__pipeline_id__get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "pipeline_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Pipeline Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PipelineResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/pipelines/{pipeline_id}/run": {
+            "post": {
+                "tags": [
+                    "Pipelines"
+                ],
+                "summary": "Trigger Pipeline Run",
+                "operationId": "trigger_pipeline_run_v1_pipelines__pipeline_id__run_post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "pipeline_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Pipeline Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TriggerRunRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PipelineRunResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/pipelines/{pipeline_id}/runs/{run_id}/quality-gate": {
+            "post": {
+                "tags": [
+                    "Pipelines"
+                ],
+                "summary": "Report Quality Gate",
+                "operationId": "report_quality_gate_v1_pipelines__pipeline_id__runs__run_id__quality_gate_post",
+                "parameters": [
+                    {
+                        "name": "pipeline_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Pipeline Id"
+                        }
+                    },
+                    {
+                        "name": "run_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Run Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/QualityGateReportRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/QualityGateReportResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/harness/validate": {
+            "post": {
+                "tags": [
+                    "Harness"
+                ],
+                "summary": "Validate Pipeline",
+                "operationId": "validate_pipeline_v1_harness_validate_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ValidationRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/harness/schema": {
+            "get": {
+                "tags": [
+                    "Harness"
+                ],
+                "summary": "Get Schema",
+                "operationId": "get_schema_v1_harness_schema_get",
+                "parameters": [
+                    {
+                        "name": "pipeline_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "ingestion",
+                            "title": "Pipeline Type"
+                        }
+                    },
+                    {
+                        "name": "endpoint_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "relational",
+                            "title": "Endpoint Type"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HarnessSchemaResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/harness/gold-examples": {
+            "get": {
+                "tags": [
+                    "Harness"
+                ],
+                "summary": "Get Gold Examples",
+                "description": "Return canonical or real YAML examples for a given pipeline type (unauthenticated).",
+                "operationId": "get_gold_examples_v1_harness_gold_examples_get",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Type"
+                        }
+                    },
+                    {
+                        "name": "compute_engine",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Compute Engine"
+                        }
+                    },
+                    {
+                        "name": "transform_engine",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Transform Engine"
+                        }
+                    },
+                    {
+                        "name": "source_asset_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Source Asset Id"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 3,
+                            "title": "Limit"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "title": "Response Get Gold Examples V1 Harness Gold Examples Get"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/harness/pipelines/{pipeline_id}/yaml": {
+            "get": {
+                "tags": [
+                    "Harness"
+                ],
+                "summary": "Get Pipeline Yaml",
+                "description": "Return the canonical, self-healed YAML for the given pipeline (unauthenticated).",
+                "operationId": "get_pipeline_yaml_v1_harness_pipelines__pipeline_id__yaml_get",
+                "parameters": [
+                    {
+                        "name": "pipeline_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Pipeline Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PipelineYamlExportResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "tags": [
+                    "observability"
+                ],
+                "summary": "Liveness probe — verifica se a API esta respondendo",
+                "description": "Endpoint leve para Kubernetes liveness probes e monitores externos. Nao verifica conectividade com banco ou servicos externos. Retorna 200 enquanto o processo Python estiver rodando.",
+                "operationId": "health_check_health_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HealthResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health/ready": {
+            "get": {
+                "tags": [
+                    "observability"
+                ],
+                "summary": "Readiness probe — verifies dependencies",
+                "description": "Check if the API is ready to handle traffic by verifying critical dependencies.",
+                "operationId": "health_ready_health_ready_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ReadyResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/metrics": {
+            "get": {
+                "tags": [
+                    "Metrics"
+                ],
+                "summary": "Metrics",
+                "description": "Exposes Prometheus metrics exposition endpoint.",
+                "operationId": "metrics_metrics_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AirflowConfigRequest": {
+                "properties": {
+                    "retries": {
+                        "type": "integer",
+                        "title": "Retries"
+                    },
+                    "retry_delay_minutes": {
+                        "type": "integer",
+                        "title": "Retry Delay Minutes"
+                    },
+                    "execution_timeout_minutes": {
+                        "type": "integer",
+                        "title": "Execution Timeout Minutes"
+                    },
+                    "sla_minutes": {
+                        "type": "integer",
+                        "title": "Sla Minutes"
+                    },
+                    "tags": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Tags"
+                    },
+                    "pool": {
+                        "type": "string",
+                        "title": "Pool"
+                    }
+                },
+                "type": "object",
+                "title": "AirflowConfigRequest"
+            },
+            "AssetCreateRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "Description"
+                    },
+                    "owner_email": {
+                        "type": "string",
+                        "title": "Owner Email"
+                    },
+                    "tags": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Tags",
+                        "default": []
+                    },
+                    "policy_tags": {
+                        "items": {
+                            "$ref": "#/components/schemas/PolicyTag"
+                        },
+                        "type": "array",
+                        "title": "Policy Tags",
+                        "default": []
+                    },
+                    "discovery_schedule": {
+                        "type": "string",
+                        "title": "Discovery Schedule"
+                    },
+                    "discovery_scope_include": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Discovery Scope Include",
+                        "default": []
+                    },
+                    "discovery_scope_exclude": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Discovery Scope Exclude",
+                        "default": []
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name",
+                    "description",
+                    "owner_email",
+                    "discovery_schedule"
+                ],
+                "title": "AssetCreateRequest"
+            },
+            "AssetResponse": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "Description"
+                    },
+                    "owner_email": {
+                        "type": "string",
+                        "title": "Owner Email"
+                    },
+                    "tags": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Tags"
+                    },
+                    "policy_tags": {
+                        "items": {
+                            "$ref": "#/components/schemas/PolicyTag"
+                        },
+                        "type": "array",
+                        "title": "Policy Tags"
+                    },
+                    "state": {
+                        "$ref": "#/components/schemas/AssetState"
+                    },
+                    "discovery_schedule": {
+                        "type": "string",
+                        "title": "Discovery Schedule"
+                    },
+                    "discovery_scope_include": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Discovery Scope Include"
+                    },
+                    "discovery_scope_exclude": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Discovery Scope Exclude"
+                    },
+                    "endpoint_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Endpoint Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "description",
+                    "owner_email",
+                    "tags",
+                    "policy_tags",
+                    "state",
+                    "discovery_schedule",
+                    "discovery_scope_include",
+                    "discovery_scope_exclude",
+                    "endpoint_id"
+                ],
+                "title": "AssetResponse"
+            },
+            "AssetState": {
+                "type": "string",
+                "enum": [
+                    "draft",
+                    "active",
+                    "deprecated",
+                    "archived"
+                ],
+                "title": "AssetState"
+            },
+            "AssetUpdateRequest": {
+                "properties": {
+                    "description": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Description"
+                    },
+                    "tags": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Tags"
+                    },
+                    "policy_tags": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "$ref": "#/components/schemas/PolicyTag"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Policy Tags"
+                    },
+                    "endpoint_name": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Endpoint Name"
+                    }
+                },
+                "type": "object",
+                "title": "AssetUpdateRequest"
+            },
+            "ComputeConfigRequest": {
+                "properties": {
+                    "engine": {
+                        "type": "string",
+                        "title": "Engine"
+                    },
+                    "staging_bucket": {
+                        "type": "string",
+                        "title": "Staging Bucket"
+                    },
+                    "num_workers": {
+                        "type": "integer",
+                        "title": "Num Workers"
+                    },
+                    "machine_type": {
+                        "type": "string",
+                        "title": "Machine Type"
+                    }
+                },
+                "type": "object",
+                "title": "ComputeConfigRequest"
+            },
+            "CreatePipelineRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "pipeline_type": {
+                        "type": "string",
+                        "title": "Pipeline Type"
+                    },
+                    "owner_email": {
+                        "type": "string",
+                        "title": "Owner Email"
+                    },
+                    "source_asset": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Source Asset"
+                    },
+                    "cron_schedule": {
+                        "type": "string",
+                        "title": "Cron Schedule"
+                    },
+                    "destination_asset": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Destination Asset"
+                    },
+                    "destination_objects": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "additionalProperties": true,
+                                    "type": "object"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Destination Objects"
+                    },
+                    "source_objects": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "$ref": "#/components/schemas/ExtractionObjectRequest"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Source Objects"
+                    },
+                    "compute": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/ComputeConfigRequest"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "quality_rules": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "$ref": "#/components/schemas/QualityRuleRequest"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Quality Rules"
+                    },
+                    "airflow_config": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/AirflowConfigRequest"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "source_asset_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Source Asset Id"
+                    },
+                    "destination_asset_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Destination Asset Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name",
+                    "pipeline_type",
+                    "owner_email",
+                    "cron_schedule"
+                ],
+                "title": "CreatePipelineRequest"
+            },
+            "DatabaseEndpointCreateRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "credential_ref": {
+                        "type": "string",
+                        "title": "Credential Ref"
+                    },
+                    "technical_description": {
+                        "type": "string",
+                        "title": "Technical Description",
+                        "default": ""
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name",
+                    "credential_ref"
+                ],
+                "title": "DatabaseEndpointCreateRequest"
+            },
+            "DiscoveryRunResponse": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id"
+                    },
+                    "asset_id": {
+                        "type": "string",
+                        "title": "Asset Id"
+                    },
+                    "triggered_by": {
+                        "type": "string",
+                        "title": "Triggered By"
+                    },
+                    "status": {
+                        "type": "string",
+                        "title": "Status"
+                    },
+                    "started_at": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Started At"
+                    },
+                    "completed_at": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Completed At"
+                    },
+                    "objects_discovered": {
+                        "type": "integer",
+                        "title": "Objects Discovered"
+                    },
+                    "fields_discovered": {
+                        "type": "integer",
+                        "title": "Fields Discovered"
+                    },
+                    "error_message": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Error Message"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "asset_id",
+                    "triggered_by",
+                    "status",
+                    "started_at",
+                    "completed_at",
+                    "objects_discovered",
+                    "fields_discovered",
+                    "error_message"
+                ],
+                "title": "DiscoveryRunResponse"
+            },
+            "DriftApprovalResponse": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id"
+                    },
+                    "discovery_run_id": {
+                        "type": "string",
+                        "title": "Discovery Run Id"
+                    },
+                    "asset_id": {
+                        "type": "string",
+                        "title": "Asset Id"
+                    },
+                    "object_id": {
+                        "type": "string",
+                        "title": "Object Id"
+                    },
+                    "field_name": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Field Name"
+                    },
+                    "change_type": {
+                        "type": "string",
+                        "title": "Change Type"
+                    },
+                    "severity_description": {
+                        "type": "string",
+                        "title": "Severity Description"
+                    },
+                    "decision": {
+                        "type": "string",
+                        "title": "Decision"
+                    },
+                    "decided_by": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Decided By"
+                    },
+                    "decided_at": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Decided At"
+                    },
+                    "owner_notes": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Owner Notes"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "discovery_run_id",
+                    "asset_id",
+                    "object_id",
+                    "field_name",
+                    "change_type",
+                    "severity_description",
+                    "decision",
+                    "decided_by",
+                    "decided_at",
+                    "owner_notes"
+                ],
+                "title": "DriftApprovalResponse"
+            },
+            "DriftDecisionRequest": {
+                "properties": {
+                    "decision": {
+                        "type": "string",
+                        "title": "Decision",
+                        "description": "'approved' or 'rejected'"
+                    },
+                    "decided_by": {
+                        "type": "string",
+                        "title": "Decided By"
+                    },
+                    "notes": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Notes"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "decision",
+                    "decided_by"
+                ],
+                "title": "DriftDecisionRequest"
+            },
+            "EndpointResponse": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/EndpointType"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "type"
+                ],
+                "title": "EndpointResponse",
+                "description": "HTTP response: only id and type are visible. Sensitive fields never exposed."
+            },
+            "EndpointType": {
+                "type": "string",
+                "enum": [
+                    "database",
+                    "rest_api",
+                    "sftp",
+                    "cloud_bucket",
+                    "etl_flow",
+                    "nosql"
+                ],
+                "title": "EndpointType",
+                "description": "Supported endpoint (connection) types. Each maps to a typed Endpoint subclass."
+            },
+            "ExtractionObjectRequest": {
+                "properties": {
+                    "object_id": {
+                        "type": "string",
+                        "title": "Object Id"
+                    },
+                    "load_strategy": {
+                        "type": "string",
+                        "title": "Load Strategy"
+                    },
+                    "watermark_column": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Watermark Column"
+                    },
+                    "page_size": {
+                        "type": "integer",
+                        "title": "Page Size"
+                    },
+                    "partition_column": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Partition Column"
+                    },
+                    "compression": {
+                        "type": "string",
+                        "title": "Compression"
+                    },
+                    "encoding": {
+                        "type": "string",
+                        "title": "Encoding"
+                    },
+                    "extraction_query": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Extraction Query"
+                    },
+                    "credential_ref": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Credential Ref"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "object_id"
+                ],
+                "title": "ExtractionObjectRequest"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "HarnessSchemaResponse": {
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "title": "Type",
+                        "description": "The root type of the schema (usually 'object')."
+                    },
+                    "properties": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Properties",
+                        "description": "The properties defined in the schema."
+                    }
+                },
+                "additionalProperties": true,
+                "type": "object",
+                "required": [
+                    "type",
+                    "properties"
+                ],
+                "title": "HarnessSchemaResponse"
+            },
+            "HealthResponse": {
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "title": "Status"
+                    },
+                    "version": {
+                        "type": "string",
+                        "title": "Version"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "status",
+                    "version"
+                ],
+                "title": "HealthResponse",
+                "description": "Payload retornado pelo endpoint de saude da API."
+            },
+            "LineageGraphResponse": {
+                "properties": {
+                    "upstream": {
+                        "items": {
+                            "$ref": "#/components/schemas/LineageNodeSchema"
+                        },
+                        "type": "array",
+                        "title": "Upstream"
+                    },
+                    "downstream": {
+                        "items": {
+                            "$ref": "#/components/schemas/LineageNodeSchema"
+                        },
+                        "type": "array",
+                        "title": "Downstream"
+                    }
+                },
+                "type": "object",
+                "title": "LineageGraphResponse"
+            },
+            "LineageNodeSchema": {
+                "properties": {
+                    "object_id": {
+                        "type": "string",
+                        "title": "Object Id"
+                    },
+                    "column_name": {
+                        "type": "string",
+                        "title": "Column Name"
+                    },
+                    "transformation": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Transformation"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "object_id",
+                    "column_name"
+                ],
+                "title": "LineageNodeSchema"
+            },
+            "NoSqlEndpointCreateRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "credential_ref": {
+                        "type": "string",
+                        "title": "Credential Ref"
+                    },
+                    "technical_description": {
+                        "type": "string",
+                        "title": "Technical Description",
+                        "default": ""
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name",
+                    "credential_ref"
+                ],
+                "title": "NoSqlEndpointCreateRequest"
+            },
+            "PipelineResponse": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "pipeline_type": {
+                        "type": "string",
+                        "title": "Pipeline Type"
+                    },
+                    "owner_email": {
+                        "type": "string",
+                        "title": "Owner Email"
+                    },
+                    "source_asset": {
+                        "type": "string",
+                        "title": "Source Asset",
+                        "default": ""
+                    },
+                    "destination_asset": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Destination Asset"
+                    },
+                    "cron_schedule": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Cron Schedule"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "pipeline_type",
+                    "owner_email"
+                ],
+                "title": "PipelineResponse"
+            },
+            "PipelineRunResponse": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id"
+                    },
+                    "pipeline_id": {
+                        "type": "string",
+                        "title": "Pipeline Id"
+                    },
+                    "pipeline_name": {
+                        "type": "string",
+                        "title": "Pipeline Name"
+                    },
+                    "dag_run_id": {
+                        "type": "string",
+                        "title": "Dag Run Id"
+                    },
+                    "status": {
+                        "type": "string",
+                        "title": "Status"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "pipeline_id",
+                    "pipeline_name",
+                    "dag_run_id",
+                    "status"
+                ],
+                "title": "PipelineRunResponse"
+            },
+            "PipelineYamlExportResponse": {
+                "properties": {
+                    "pipeline_id": {
+                        "type": "string",
+                        "title": "Pipeline Id",
+                        "description": "Unique identifier of the pipeline (matches dag_id)."
+                    },
+                    "pipeline_yaml": {
+                        "type": "string",
+                        "title": "Pipeline Yaml",
+                        "description": "Canonical YAML representation of the pipeline."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "pipeline_id",
+                    "pipeline_yaml"
+                ],
+                "title": "PipelineYamlExportResponse",
+                "description": "Response model for the unauthenticated pipeline YAML export endpoint."
+            },
+            "PolicyTag": {
+                "type": "string",
+                "enum": [
+                    "PII",
+                    "RESTRICTED",
+                    "PUBLIC",
+                    "CONFIDENTIAL"
+                ],
+                "title": "PolicyTag",
+                "description": "Data sensitivity classification tags.\n\nInherited by all DataObjects and DataElements derived from a DataAsset.\nDiscovery engine infers and suggests tags; asset owner confirms."
+            },
+            "QualityGateReportRequest": {
+                "properties": {
+                    "metrics": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Metrics"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "metrics"
+                ],
+                "title": "QualityGateReportRequest"
+            },
+            "QualityGateReportResponse": {
+                "properties": {
+                    "run_id": {
+                        "type": "string",
+                        "title": "Run Id"
+                    },
+                    "status": {
+                        "type": "string",
+                        "title": "Status"
+                    },
+                    "violations": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Violations"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "run_id",
+                    "status",
+                    "violations"
+                ],
+                "title": "QualityGateReportResponse"
+            },
+            "QualityRuleRequest": {
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "title": "Type"
+                    },
+                    "column": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Column"
+                    },
+                    "value": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Value"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "type"
+                ],
+                "title": "QualityRuleRequest"
+            },
+            "ReadyResponse": {
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "title": "Status"
+                    },
+                    "components": {
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "type": "object",
+                        "title": "Components"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "status",
+                    "components"
+                ],
+                "title": "ReadyResponse",
+                "description": "Payload for the readiness probe."
+            },
+            "RestApiEndpointCreateRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "credential_ref": {
+                        "type": "string",
+                        "title": "Credential Ref"
+                    },
+                    "base_url": {
+                        "type": "string",
+                        "title": "Base Url",
+                        "default": ""
+                    },
+                    "auth_type": {
+                        "type": "string",
+                        "title": "Auth Type",
+                        "default": ""
+                    },
+                    "technical_description": {
+                        "type": "string",
+                        "title": "Technical Description",
+                        "default": ""
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name",
+                    "credential_ref"
+                ],
+                "title": "RestApiEndpointCreateRequest"
+            },
+            "TriggerDiscoveryRequest": {
+                "properties": {
+                    "triggered_by": {
+                        "type": "string",
+                        "title": "Triggered By",
+                        "description": "Who or what triggered this run (e.g. 'manual', 'scheduler')"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "triggered_by"
+                ],
+                "title": "TriggerDiscoveryRequest"
+            },
+            "TriggerRunRequest": {
+                "properties": {
+                    "triggered_by": {
+                        "type": "string",
+                        "title": "Triggered By"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "triggered_by"
+                ],
+                "title": "TriggerRunRequest"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    },
+                    "input": {
+                        "title": "Input"
+                    },
+                    "ctx": {
+                        "type": "object",
+                        "title": "Context"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            },
+            "ValidationErrorDetail": {
+                "properties": {
+                    "json_pointer": {
+                        "type": "string",
+                        "title": "Json Pointer",
+                        "description": "JSON Pointer (RFC 6901) indicating the exact field with the error."
+                    },
+                    "error_code": {
+                        "type": "string",
+                        "title": "Error Code",
+                        "description": "Categorized error code (e.g., MISSING_ID, INVALID_SQL)."
+                    },
+                    "message": {
+                        "type": "string",
+                        "title": "Message",
+                        "description": "Technical message describing the problem."
+                    },
+                    "suggestion": {
+                        "type": "string",
+                        "title": "Suggestion",
+                        "description": "Direct and actionable corrective suggestion."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "json_pointer",
+                    "error_code",
+                    "message",
+                    "suggestion"
+                ],
+                "title": "ValidationErrorDetail"
+            },
+            "ValidationRequest": {
+                "properties": {
+                    "pipeline_yaml": {
+                        "type": "string",
+                        "title": "Pipeline Yaml",
+                        "description": "Raw YAML content of the pipeline configuration."
+                    },
+                    "pipeline_type": {
+                        "type": "string",
+                        "enum": [
+                            "relational",
+                            "file",
+                            "api"
+                        ],
+                        "title": "Pipeline Type",
+                        "description": "Type of pipeline to apply specific validation rules.",
+                        "default": "relational"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "pipeline_yaml"
+                ],
+                "title": "ValidationRequest"
+            },
+            "ValidationResponse": {
+                "properties": {
+                    "is_valid": {
+                        "type": "boolean",
+                        "title": "Is Valid",
+                        "description": "True if the YAML meets all platform requirements."
+                    },
+                    "errors": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationErrorDetail"
+                        },
+                        "type": "array",
+                        "title": "Errors",
+                        "description": "List of validation errors; empty if is_valid is True."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "is_valid"
+                ],
+                "title": "ValidationResponse"
+            }
+        },
+        "securitySchemes": {
+            "HTTPBearer": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    }
+}
