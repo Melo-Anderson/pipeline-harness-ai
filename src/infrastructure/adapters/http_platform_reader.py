@@ -44,16 +44,15 @@ class HttpPlatformReader(PlatformSchemaPort, PlatformExamplesPort, PlatformYamlP
     def get_gold_examples(
         self,
         pipeline_type: str,
-        compute_engine: str | None = None,
-        transform_engine: str | None = None,
         source_asset_id: str | None = None,
-        limit: int = 3,
+        limit: int | None = None,
     ) -> dict[str, Any]:
         try:
-            params = {"type": pipeline_type, "limit": limit}
-            if compute_engine: params["compute_engine"] = compute_engine
-            if transform_engine: params["transform_engine"] = transform_engine
-            if source_asset_id: params["source_asset_id"] = source_asset_id
+            params: dict[str, Any] = {"type": pipeline_type}
+            if limit is not None:
+                params["limit"] = limit
+            if source_asset_id:
+                params["source_asset_id"] = source_asset_id
             
             r = self.client.get(self.examples_url, params=params)
             r.raise_for_status()
