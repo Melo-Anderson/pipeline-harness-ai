@@ -1,4 +1,4 @@
-"""Tests para context_node com injeção de platform contracts e 2-phase resolution."""
+"""Tests for context_node with platform contracts injection and 2-phase resolution."""
 
 from unittest.mock import MagicMock
 

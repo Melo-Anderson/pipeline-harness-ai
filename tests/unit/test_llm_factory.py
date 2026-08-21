@@ -1,11 +1,11 @@
-"""Tests para o LLM factory agnóstico."""
+"""Tests for provider-agnostic LLM factory."""
 
 from unittest.mock import MagicMock, patch
 
 
 @patch("src.infrastructure.llm_factory.init_chat_model")
 def test_get_llm_calls_init_chat_model_with_defaults(mock_init: MagicMock) -> None:
-    """Deve chamar init_chat_model com os valores de config."""
+    """Should call init_chat_model with configured settings values."""
     from src.config import settings
     from src.infrastructure.llm_factory import get_llm
 
@@ -18,7 +18,7 @@ def test_get_llm_calls_init_chat_model_with_defaults(mock_init: MagicMock) -> No
 
 @patch("src.infrastructure.llm_factory.init_chat_model")
 def test_get_llm_passes_base_url_when_configured(mock_init: MagicMock) -> None:
-    """Deve passar base_url quando llm_base_url estiver configurado."""
+    """Should pass base_url when llm_base_url is configured."""
     from src.config import settings
 
     original = settings.llm_base_url
