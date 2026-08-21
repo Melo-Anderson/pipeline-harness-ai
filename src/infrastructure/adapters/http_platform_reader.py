@@ -1,8 +1,8 @@
 """
-HTTP Platform Reader — adapter que busca contratos YAML da plataforma via HTTP.
+HTTP Platform Reader — adapter that retrieves platform YAML contracts via HTTP.
 
-Implementa PlatformSchemaPort e PlatformExamplesPort.
-Em caso de falha (plataforma indisponível), retorna fallback vazio para não bloquear o engine.
+Implements PlatformSchemaPort, PlatformExamplesPort, and PlatformYamlPort.
+On failure (platform unavailable), returns empty fallback to keep engine resilient.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class HttpPlatformReader(PlatformSchemaPort, PlatformExamplesPort, PlatformYamlPort):
-    """Implementação real (mas resiliente) dos contratos da Plataforma com DTOs OpenAPI."""
+    """Real (resilient) implementation of Platform contracts with OpenAPI DTOs."""
 
     def __init__(self, schema_url: str, examples_url: str, yaml_url_template: str):
         self.schema_url = schema_url

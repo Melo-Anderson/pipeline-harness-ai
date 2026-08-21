@@ -19,7 +19,7 @@ from src.infrastructure.mcp.tools import (
 
 
 def create_mcp_server() -> MCPServer:
-    """Instancia e registra todas as Tools e Resources no servidor MCP."""
+    """Instantiates and registers all Tools and Resources on the MCP server."""
     server = MCPServer(
         name="harness-engine-mcp",
         version="0.1.0",
@@ -28,28 +28,28 @@ def create_mcp_server() -> MCPServer:
 
     @server.tool(
         name="get_table_schema",
-        description="Retorna o schema detalhado de uma tabela/API do catálogo com tipos, PKs e policy_tags (PII).",
+        description="Returns detailed schema of a catalog table/API with types, primary keys, and policy tags (PII).",
     )
     def get_table_schema(asset_name: str, object_name: str) -> str:
         return handle_get_table_schema(asset_name=asset_name, object_name=object_name)
 
     @server.tool(
         name="get_gold_examples",
-        description="Busca os exemplos mais aderentes usando RAG semântico no pgvector com fallback para a API.",
+        description="Fetches relevant pipeline examples using pgvector semantic RAG with fallback to the platform API.",
     )
     def get_gold_examples(pipeline_type: str, query: str = "", limit: int = 2) -> str:
         return handle_get_gold_examples(pipeline_type=pipeline_type, query=query, limit=limit)
 
     @server.tool(
         name="validate_pipeline_yaml",
-        description="Executa a validação determinística na API da plataforma e retorna os erros estruturados.",
+        description="Executes deterministic validation against the platform API and returns structured errors.",
     )
     def validate_pipeline_yaml(yaml_content: str, pipeline_type: str) -> str:
         return handle_validate_pipeline_yaml(yaml_content=yaml_content, pipeline_type=pipeline_type)
 
     @server.tool(
         name="generate_pipeline_yaml",
-        description="Executa o grafo completo do LangGraph e retorna o YAML final aprovado e a trilha de auditoria.",
+        description="Executes the full LangGraph workflow and returns the approved final YAML and audit trail.",
     )
     def generate_pipeline_yaml(prompt: str, pipeline_type: str | None = None) -> str:
         return handle_generate_pipeline_yaml(prompt=prompt, pipeline_type=pipeline_type)
@@ -57,7 +57,7 @@ def create_mcp_server() -> MCPServer:
     @server.resource(
         "schema://platform/{pipeline_type}",
         name="Platform JSON Schema",
-        description="Retorna o JSON Schema canônico oficial para o tipo de pipeline.",
+        description="Returns the official canonical JSON Schema for the specified pipeline type.",
     )
     def platform_schema_resource(pipeline_type: str) -> str:
         return handle_platform_schema_resource(pipeline_type=pipeline_type)
@@ -65,7 +65,7 @@ def create_mcp_server() -> MCPServer:
     @server.resource(
         "catalog://assets/{asset_name}",
         name="Catalog Asset Objects",
-        description="Lista todos os objetos e tabelas cadastrados no asset especificado.",
+        description="Lists all objects and tables registered under the specified asset.",
     )
     def catalog_asset_resource(asset_name: str) -> str:
         return handle_catalog_asset_resource(asset_name=asset_name)
@@ -73,7 +73,7 @@ def create_mcp_server() -> MCPServer:
     @server.resource(
         "audit://executions/{run_id}",
         name="Audit Execution Trail",
-        description="Retorna o arquivo de auditoria (_audit.json) e o YAML gerado para a execução.",
+        description="Returns the audit file (_audit.json) and generated YAML for a specific execution run ID.",
     )
     def audit_execution_resource(run_id: str) -> str:
         return handle_audit_execution_resource(run_id=run_id)

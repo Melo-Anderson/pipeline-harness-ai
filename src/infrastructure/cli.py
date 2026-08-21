@@ -80,7 +80,7 @@ def generate(
 @app.command(name="revalidate-memory")
 def revalidate_memory() -> None:
     """Validate all active gold examples in pgvector against platform schema to prevent drift."""
-    console.print(Panel("[bold yellow]Iniciando Auto-Revalidação de Memória Vetorial (Anti-Drift)...[/]", title="Harness RAG"))
+    console.print(Panel("[bold yellow]Starting Vector Memory Auto-Revalidation (Anti-Drift)...[/]", title="Harness RAG"))
 
     vector_storage = PgVectorStorageAdapter()
     base_url = settings.platform_validate_url.replace("/v1/harness/validate", "")
@@ -89,34 +89,34 @@ def revalidate_memory() -> None:
     with Progress(
         SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
     ) as p:
-        t = p.add_task("[yellow]Validando YAMLs ativos no pgvector...", total=None)
+        t = p.add_task("[yellow]Validating active YAMLs in pgvector...", total=None)
         res = svc_revalidate(vector_storage=vector_storage, validation_port=validator)
         p.remove_task(t)
 
-    table = Table(title="Resumo da Revalidação de Memória (pgvector)")
-    table.add_column("Métrica", style="cyan")
-    table.add_column("Valor", style="magenta")
+    table = Table(title="Vector Memory Revalidation Summary (pgvector)")
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="magenta")
 
-    table.add_row("Total de Exemplos Analisados", str(res["total_checked"]))
-    table.add_row("Exemplos Válidos (Atualizados)", f"[green]{res['valid_count']}[/]")
-    table.add_row("Exemplos Desativados por Drift", f"[red]{res['deactivated_count']}[/]")
+    table.add_row("Total Examples Checked", str(res["total_checked"]))
+    table.add_row("Valid Examples (Updated)", f"[green]{res['valid_count']}[/]")
+    table.add_row("Deactivated Examples (Drift)", f"[red]{res['deactivated_count']}[/]")
 
     console.print(table)
 
     if res["deactivated_records"]:
-        console.print("\n[bold red]Detalhes dos Exemplos Desativados:[/]")
+        console.print("\n[bold red]Deactivated Examples Details:[/]")
         for rec in res["deactivated_records"]:
-            console.print(f"  • ID: [cyan]{rec['id']}[/] | Tipo: [yellow]{rec['pipeline_type']}[/]")
-            console.print(f"    Descrição: {rec['description']}")
-            console.print(f"    Erros: [red]{', '.join(rec['errors'])}[/]")
+            console.print(f"  • ID: [cyan]{rec['id']}[/] | Type: [yellow]{rec['pipeline_type']}[/]")
+            console.print(f"    Description: {rec['description']}")
+            console.print(f"    Errors: [red]{', '.join(rec['errors'])}[/]")
 
 
 @app.command(name="reindex-gold-examples")
 def reindex_gold_examples_cli(
-    pipeline_type: str = typer.Option("all", "--type", "-t", help="Tipo de pipeline a indexar (all, ingestion, etl, export)."),
+    pipeline_type: str = typer.Option("all", "--type", "-t", help="Pipeline type to index (all, ingestion, etl, export)."),
 ) -> None:
     """Fetch canonical gold examples from Platform API and index them in pgvector."""
-    console.print(Panel("[bold cyan]Iniciando Reindexação de Gold Examples no pgvector...[/]", title="Harness RAG"))
+    console.print(Panel("[bold cyan]Starting Gold Examples Reindexing in pgvector...[/]", title="Harness RAG"))
 
     types = ["ingestion", "etl", "export"] if pipeline_type == "all" else [pipeline_type]
     vector_storage = PgVectorStorageAdapter()
@@ -130,7 +130,7 @@ def reindex_gold_examples_cli(
     with Progress(
         SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
     ) as p:
-        t = p.add_task(f"[cyan]Vetorizando exemplos para {types}...", total=None)
+        t = p.add_task(f"[cyan]Vectorizing examples for {types}...", total=None)
         res = svc_reindex(
             vector_storage=vector_storage,
             embedding_port=embedding_adapter,
@@ -139,9 +139,9 @@ def reindex_gold_examples_cli(
         )
         p.remove_task(t)
 
-    table = Table(title="Resultado da Indexação Semântica")
-    table.add_column("Tipos Indexados", style="cyan")
-    table.add_column("Total de Vetores Gravados", style="green")
+    table = Table(title="Semantic Indexing Results")
+    table.add_column("Indexed Types", style="cyan")
+    table.add_column("Total Vectors Stored", style="green")
 
     table.add_row(", ".join(res["pipeline_types"]), str(res["total_indexed"]))
     console.print(table)

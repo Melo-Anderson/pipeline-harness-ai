@@ -14,7 +14,7 @@ def handle_platform_schema_resource(
     pipeline_type: str,
     schema_port: PlatformSchemaPort | None = None,
 ) -> str:
-    """Retorna o JSON Schema canônico oficial para o tipo de pipeline."""
+    """Returns official canonical JSON Schema for the specified pipeline type."""
     sch_port = schema_port or HttpPlatformReader(
         schema_url=settings.platform_schema_url,
         examples_url=settings.platform_examples_url,
@@ -28,7 +28,7 @@ def handle_catalog_asset_resource(
     asset_name: str,
     metadata_port: MetadataPort | None = None,
 ) -> str:
-    """Lista todos os objetos e tabelas cadastrados no asset especificado."""
+    """Lists all objects and tables registered under the specified asset."""
     meta_reader: MetadataPort = metadata_port if metadata_port is not None else DbSchemaReader(settings.platform_db_url)
     objects = meta_reader.list_objects_for_asset(asset_name)
 
@@ -45,7 +45,7 @@ def handle_catalog_asset_resource(
 
 
 def handle_audit_execution_resource(run_id: str) -> str:
-    """Retorna o arquivo de auditoria (_audit.json) e o YAML gerado para a execução."""
+    """Returns the audit file (_audit.json) and generated YAML for a specific execution."""
     out_dir = os.environ.get("HARNESS_AUDIT_DIR", "./out")
     audit_file = os.path.join(out_dir, f"{run_id}_audit.json")
     yaml_file = os.path.join(out_dir, f"{run_id}.yaml")

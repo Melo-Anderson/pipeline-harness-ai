@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class PgVectorStorageAdapter:
-    """Implementa VectorStoragePort conectando-se ao PostgreSQL com pgvector no schema 'harness'."""
+    """Implements VectorStoragePort connecting to PostgreSQL with pgvector under the 'harness' schema."""
 
     def __init__(
         self,
@@ -35,7 +35,7 @@ class PgVectorStorageAdapter:
         limit: int | None = None,
         similarity_threshold: float | None = None,
     ) -> list[VectorSearchResult]:
-        """Busca os YAMLs mais similares usando distância de cossenos no pgvector."""
+        """Searches for most similar YAMLs using cosine distance in pgvector."""
         lim = limit if limit is not None else settings.pgvector_top_k
         thresh = (
             similarity_threshold
@@ -87,16 +87,16 @@ class PgVectorStorageAdapter:
                         )
                     )
         except Exception as exc:
-            logger.warning("Falha ao buscar vetores no pgvector (schema 'harness'): %s", exc)
+            logger.warning("Failed to search vectors in pgvector ('harness' schema): %s", exc)
             return []
 
         return results
 
     def insert_gold_example(self, record: GoldEmbeddingRecord) -> str:
-        """Insere um novo exemplo canônico no schema harness com seu embedding."""
+        """Inserts a new canonical gold example in the harness schema with its embedding."""
         rec_id = record.id or str(uuid.uuid4())
         if record.embedding is None:
-            raise ValueError("Embedding é obrigatório para persistência no pgvector.")
+            raise ValueError("Embedding is required for pgvector persistence.")
         
         embedding_str = "[" + ",".join(str(x) for x in record.embedding) + "]"
 
@@ -147,7 +147,7 @@ class PgVectorStorageAdapter:
             return inserted_id
 
     def get_all_active(self) -> list[GoldEmbeddingRecord]:
-        """Retorna todos os registros ativos para rotinas de revalidação e auditoria de drift."""
+        """Returns all active records for revalidation and drift audit routines."""
         stmt = sa.text(
             """
             SELECT 
@@ -186,7 +186,7 @@ class PgVectorStorageAdapter:
         return records
 
     def deactivate_example(self, record_id: str) -> bool:
-        """Desativa um exemplo que falhou na validação de contrato (anti-drift)."""
+        """Deactivates an example that failed contract validation (anti-drift)."""
         stmt = sa.text(
             """
             UPDATE harness.gold_pipeline_embeddings
@@ -200,7 +200,7 @@ class PgVectorStorageAdapter:
             return res.rowcount > 0
 
     def update_validation_timestamp(self, record_id: str) -> bool:
-        """Atualiza a data de última validação bem-sucedida de um exemplo ativo."""
+        """Updates the last validated timestamp of an active example."""
         stmt = sa.text(
             """
             UPDATE harness.gold_pipeline_embeddings

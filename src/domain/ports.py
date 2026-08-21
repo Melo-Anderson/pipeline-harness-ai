@@ -55,14 +55,14 @@ class MetricsPort(Protocol):
 
 @runtime_checkable
 class PlatformSchemaPort(Protocol):
-    """Porta read-only para buscar JSON Schema do contrato YAML da plataforma."""
+    """Read-only port to fetch platform YAML contract JSON Schema."""
 
     def get_json_schema(self, pipeline_type: str = "all", endpoint_type: str | None = None) -> dict[str, Any]: ...
 
 
 @runtime_checkable
 class PlatformExamplesPort(Protocol):
-    """Porta read-only para buscar gold examples YAML canônicos da plataforma."""
+    """Read-only port to fetch canonical gold pipeline YAML examples from platform."""
 
     def get_gold_examples(
         self,
@@ -81,14 +81,14 @@ class PlatformValidationPort(Protocol):
 
 @runtime_checkable
 class PlatformYamlPort(Protocol):
-    """Porta read-only para recuperar a versão YAML mais recente de uma pipeline existente."""
+    """Read-only port to retrieve the latest YAML version of an existing pipeline."""
 
     def get_pipeline_yaml(self, pipeline_id: str) -> dict[str, str] | None: ...
 
 
 @runtime_checkable
 class EmbeddingPort(Protocol):
-    """Porta para geração de embeddings vetoriais."""
+    """Port for vector embedding generation."""
 
     def embed_text(self, text: str) -> list[float]: ...
     def embed_documents(self, texts: list[str]) -> list[list[float]]: ...
@@ -96,7 +96,7 @@ class EmbeddingPort(Protocol):
 
 @runtime_checkable
 class VectorStoragePort(Protocol):
-    """Porta para persistência e busca semântica em banco vetorial (pgvector)."""
+    """Port for vector storage persistence and semantic search (pgvector)."""
 
     def search_similar(
         self,

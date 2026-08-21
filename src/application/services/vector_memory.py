@@ -19,8 +19,8 @@ def revalidate_vector_memory(
     validation_port: PlatformValidationPort,
 ) -> dict[str, Any]:
     """
-    Submete todos os exemplos ativos no pgvector contra a suíte de validação da plataforma.
-    Se um exemplo violar as regras atuais de contrato (schema drift), é desativado (is_active=False).
+    Submits all active examples in pgvector against the platform validation suite.
+    If an example violates current contract rules (schema drift), it is deactivated (is_active=False).
     """
     active_records = vector_storage.get_all_active()
     total = len(active_records)
@@ -56,12 +56,12 @@ def revalidate_vector_memory(
                     }
                 )
                 logger.warning(
-                    "Exemplo %s desativado por Schema Drift: %s",
+                    "Example %s deactivated due to Schema Drift: %s",
                     rec.id,
                     errors,
                 )
         except Exception as exc:
-            logger.error("Erro ao validar registro %s: %s", rec.id, exc)
+            logger.error("Error validating record %s: %s", rec.id, exc)
 
     return {
         "total_checked": total,
@@ -78,7 +78,7 @@ def reindex_gold_examples(
     pipeline_types: list[str] | None = None,
 ) -> dict[str, Any]:
     """
-    Recupera gold examples canônicos da API da plataforma, gera embeddings e popula o pgvector.
+    Fetches canonical gold examples from the platform API, generates embeddings, and populates pgvector.
     """
     types_to_index = pipeline_types or ["ingestion", "etl", "export"]
     total_indexed = 0
@@ -115,7 +115,7 @@ def reindex_gold_examples(
                 indexed_records.append(rec_id)
                 total_indexed += 1
         except Exception as exc:
-            logger.error("Erro ao reindexar gold examples do tipo '%s': %s", ptype, exc)
+            logger.error("Error reindexing gold examples of type '%s': %s", ptype, exc)
 
     return {
         "pipeline_types": types_to_index,

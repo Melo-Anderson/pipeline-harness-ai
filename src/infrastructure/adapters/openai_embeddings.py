@@ -5,7 +5,7 @@ from src.infrastructure.embedding_factory import LangChainEmbeddingAdapter
 
 
 class OpenAIEmbeddingAdapter(LangChainEmbeddingAdapter, EmbeddingPort):
-    """Implementa EmbeddingPort para OpenAI via LangChainEmbeddingAdapter."""
+    """Implements EmbeddingPort for OpenAI via LangChainEmbeddingAdapter."""
 
     def __init__(
         self,

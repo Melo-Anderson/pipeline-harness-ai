@@ -10,7 +10,7 @@ ComputeEngine = Literal["spark", "dataflow", "default"]
 
 
 class PipelinePlan(BaseModel):
-    """Output do PlannerNode - decisoes de estrategia de DW."""
+    """Output of PlannerNode — data warehouse strategy and execution decisions."""
 
     pipeline_type: PipelineTypeEnum
     recommended_engine: ComputeEngine
@@ -22,7 +22,7 @@ class PipelinePlan(BaseModel):
 
 
 class EnrichedError(BaseModel):
-    """Erro estruturado com JSON Pointer e orientacao corretiva para a LLM."""
+    """Structured error with JSON Pointer and corrective guidance for the LLM."""
 
     json_pointer: str
     error_code: str
@@ -31,7 +31,7 @@ class EnrichedError(BaseModel):
 
 
 class ValidationEvent(BaseModel):
-    """Registro tipado de uma tentativa de validacao no historico de auditoria."""
+    """Typed record of a validation attempt in the audit history."""
 
     attempt: int
     is_valid: bool = False
@@ -40,7 +40,7 @@ class ValidationEvent(BaseModel):
 
 
 class AuditTrail(BaseModel):
-    """Artefato imutavel de rastreabilidade por execucao."""
+    """Immutable audit traceability artifact per execution."""
 
     run_id: str
     user_prompt: str
@@ -52,14 +52,14 @@ class AuditTrail(BaseModel):
 
 
 class ValidationResult(BaseModel):
-    """Resposta canonica do endpoint /v1/harness/validate."""
+    """Canonical response model from /v1/harness/validate endpoint."""
 
     is_valid: bool
     errors: list[EnrichedError] = Field(default_factory=list)
 
 
 class VectorSearchResult(BaseModel):
-    """Resultado retornado da busca por similaridade de cossenos no pgvector."""
+    """Result returned from cosine similarity vector search in pgvector."""
 
     id: str
     pipeline_type: str
@@ -70,7 +70,7 @@ class VectorSearchResult(BaseModel):
 
 
 class GoldEmbeddingRecord(BaseModel):
-    """Registro canonico para persistencia e revalidacao de YAMLs no pgvector."""
+    """Canonical record for persistence and revalidation of YAML examples in pgvector."""
 
     id: str | None = None
     platform_schema_version: str | None = None

@@ -33,11 +33,11 @@ def handle_get_table_schema(
     object_name: str,
     metadata_port: MetadataPort | None = None,
 ) -> str:
-    """Retorna o schema detalhado de uma tabela/API do catálogo com tipos, PKs e policy_tags (PII)."""
+    """Returns detailed schema of a catalog table/API with types, primary keys, and policy tags (PII)."""
     meta_reader: MetadataPort = metadata_port if metadata_port is not None else DbSchemaReader(settings.platform_db_url)
     obj = meta_reader.get_object_metadata(asset_name, object_name)
     if not obj:
-        return json.dumps({"error": f"Asset '{asset_name}' ou objeto '{object_name}' não encontrado no catálogo."}, ensure_ascii=False)
+        return json.dumps({"error": f"Asset '{asset_name}' or object '{object_name}' not found in catalog."}, ensure_ascii=False)
 
     columns_data = []
     for col in obj.columns:
@@ -70,7 +70,7 @@ def handle_get_gold_examples(
     embedding_port: EmbeddingPort | None = None,
     examples_port: PlatformExamplesPort | None = None,
 ) -> str:
-    """Busca os exemplos mais aderentes usando RAG semântico no pgvector com fallback para a API."""
+    """Fetches relevant pipeline examples using pgvector semantic RAG with fallback to the platform API."""
     vec_storage = vector_storage or PgVectorStorageAdapter()
     emb_port = embedding_port or get_embeddings()
     ex_port = examples_port or HttpPlatformReader(
@@ -79,7 +79,7 @@ def handle_get_gold_examples(
         yaml_url_template=settings.platform_pipeline_yaml_url_template,
     )
 
-    # 1. RAG semântico
+    # 1. Semantic RAG
     if query:
         try:
             emb = emb_port.embed_text(query)
@@ -100,9 +100,9 @@ def handle_get_gold_examples(
                     ensure_ascii=False,
                 )
         except Exception as exc:
-            logger.warning("Falha na busca vetorial MCP, executando fallback: %s", exc)
+            logger.warning("MCP vector search failed, executing API fallback: %s", exc)
 
-    # 2. Fallback na API de gold examples
+    # 2. Platform API fallback
     api_res = ex_port.get_gold_examples(pipeline_type=pipeline_type, limit=limit)
     return json.dumps(api_res, indent=2, ensure_ascii=False)
 
@@ -112,7 +112,7 @@ def handle_validate_pipeline_yaml(
     pipeline_type: str,
     validation_port: PlatformValidationPort | None = None,
 ) -> str:
-    """Executa a validação determinística na API da plataforma e retorna os erros estruturados."""
+    """Executes deterministic validation against the platform API and returns structured errors."""
     base_url = settings.platform_validate_url.replace("/v1/harness/validate", "")
     val_port = validation_port or HttpPlatformValidationAdapter(base_url=base_url)
     res = val_port.validate_pipeline_yaml(yaml_content=yaml_content, pipeline_type=pipeline_type)
@@ -133,7 +133,7 @@ def handle_generate_pipeline_yaml(
     embedding_port: EmbeddingPort | None = None,
     validation_port: PlatformValidationPort | None = None,
 ) -> str:
-    """Executa o grafo completo do LangGraph e retorna o YAML final aprovado e a trilha de auditoria."""
+    """Executes the full LangGraph workflow and returns the approved final YAML and audit trail."""
     meta: MetadataPort = metadata_port if metadata_port is not None else DbSchemaReader(settings.platform_db_url)
     metrics = metrics_port or StorageMetricsReader(settings.metrics_storage_path)
     platform_reader = HttpPlatformReader(

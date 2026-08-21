@@ -6,7 +6,7 @@ Phase 1:
 - Extracts asset_name and object_name candidates from prompt or state.
 
 Phase 2:
-- Resolves actual object metadata (columns, PII tags, endpoint type) via MetadataPort (usando nomes transparentes do asset e objeto).
+- Resolves actual object metadata (columns, PII tags, endpoint type) via MetadataPort (using transparent asset and object names).
 - Emits warnings if requested asset/object is missing in MetadataPort.
 - Queries PlatformSchemaPort with pipeline_type (purpose) and endpoint_type (connection category).
 - Queries PlatformExamplesPort with pipeline_type and source_asset_name.
@@ -41,7 +41,7 @@ def make_context_node(
         existing_ctx = state.get("context", {})
         user_prompt = state.get("user_prompt", "")
 
-        # Phase 1: Intent & Entity Resolution (Buscando nomes transparentes do asset e objeto)
+        # Phase 1: Intent & Entity Resolution (Retrieving transparent asset and object names)
         pipeline_type = _infer_pipeline_purpose(state, user_prompt)
         asset_name = state.get("asset") or _extract_asset_name(user_prompt)
         object_name = state.get("object") or _extract_object_name(user_prompt)
@@ -51,7 +51,7 @@ def make_context_node(
         pii_cols: list[str] = list(existing_ctx.get("pii_columns", []))
         schema_meta: list[dict[str, Any]] = list(existing_ctx.get("schema_metadata", []))
 
-        # Phase 2: Metadata Lookup & Endpoint Resolution (Consulta no banco via nome)
+        # Phase 2: Metadata Lookup & Endpoint Resolution (Database lookup via entity name)
         if asset_name and object_name:
             obj_meta = metadata_port.get_object_metadata(asset_name, object_name)
             if obj_meta:
