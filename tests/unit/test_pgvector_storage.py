@@ -14,7 +14,7 @@ def test_pgvector_search_similar_with_mock_engine():
         "id": "11111111-1111-1111-1111-111111111111",
         "pipeline_type": "relational",
         "compute_engine": "spark",
-        "description": "Exemplo de Ingestão PostgreSQL",
+        "description": "PostgreSQL Ingestion Example",
         "yaml_content": "schema_version: '1.0'\nschedule:\n  cron: '0 0 * * *'",
         "similarity": 0.92,
     }
@@ -64,7 +64,7 @@ def test_pgvector_insert_missing_embedding_raises():
         yaml_content="schema_version: '1.0'",
         embedding=None,
     )
-    with pytest.raises(ValueError, match="Embedding é obrigatório"):
+    with pytest.raises(ValueError, match="Embedding is required"):
         adapter.insert_gold_example(rec)
 
 

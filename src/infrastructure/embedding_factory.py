@@ -1,8 +1,8 @@
 """
-Embedding Factory — instanciação agnóstica de embeddings (OpenAI, Google GenAI, Fake).
+Embedding Factory — provider-agnostic instantiation of embeddings (OpenAI, Google GenAI, Fake).
 
-Isola todos os imports provider-específicos. Para trocar de provider de embeddings,
-basta ajustar EMBEDDING_PROVIDER + EMBEDDING_MODEL nas env vars.
+Isolates all provider-specific imports. To switch embedding providers,
+adjust EMBEDDING_PROVIDER + EMBEDDING_MODEL in environment variables.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class DeterministicFakeEmbeddings(Embeddings):
-    """Embeddings fake determinísticos usando apenas a biblioteca padrão (sem numpy)."""
+    """Deterministic fake embeddings using standard library only (no numpy dependency)."""
 
     def __init__(self, size: int = 1536) -> None:
         self.size = size
@@ -35,7 +35,7 @@ class DeterministicFakeEmbeddings(Embeddings):
 
 
 class LangChainEmbeddingAdapter:
-    """Adaptador de Embeddings agnóstico de provedor que implementa EmbeddingPort."""
+    """Provider-agnostic embeddings adapter implementing EmbeddingPort."""
 
     def __init__(
         self,
@@ -63,7 +63,7 @@ class LangChainEmbeddingAdapter:
 
             key = self.api_key or settings.google_api_key
             if not key:
-                raise ValueError("GOOGLE_API_KEY não configurada para geração de embeddings.")
+                raise ValueError("GOOGLE_API_KEY not configured for embedding generation.")
             self._client = GoogleGenerativeAIEmbeddings(
                 model=self.model,
                 google_api_key=key,
@@ -73,7 +73,7 @@ class LangChainEmbeddingAdapter:
         # Default: OpenAI
         key = settings.openai_api_key if self.api_key is None else self.api_key
         if not key:
-            raise ValueError(f"API key não configurada para provedor de embeddings '{self.provider}'.")
+            raise ValueError(f"API key not configured for embedding provider '{self.provider}'.")
 
         from langchain_openai import OpenAIEmbeddings
 
@@ -85,11 +85,11 @@ class LangChainEmbeddingAdapter:
         return self._client
 
     def embed_text(self, text: str) -> list[float]:
-        """Gera embedding vetorial para um único texto/prompt."""
+        """Generates vector embedding for a single text/prompt."""
         return self._get_client().embed_query(text)
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        """Gera embeddings vetoriais para uma lista de documentos."""
+        """Generates vector embeddings for a list of document strings."""
         if not texts:
             return []
         return self._get_client().embed_documents(texts)
@@ -99,5 +99,5 @@ def get_embeddings(
     provider: str | None = None,
     model: str | None = None,
 ) -> EmbeddingPort:
-    """Factory: retorna uma instância configurada de EmbeddingPort."""
+    """Factory: returns a configured instance of EmbeddingPort."""
     return LangChainEmbeddingAdapter(provider=provider, model=model)

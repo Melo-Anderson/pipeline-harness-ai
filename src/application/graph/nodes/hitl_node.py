@@ -9,14 +9,14 @@ def make_hitl_node(auto_approve: bool = False) -> Any:
     def hitl_node(state: dict[str, Any]) -> dict[str, Any]:
         if auto_approve:
             return {"hitl_approved": True, "status": "approved"}
-        print("\n--- YAML Gerado ---")
+        print("\n--- Generated YAML ---")
         print(state.get("output_yaml", ""))
-        print("-------------------\n")
-        ans = input("Aprovar pipeline? (y/n/r=revisar): ").strip().lower()
+        print("----------------------\n")
+        ans = input("Approve pipeline? (y/n/r=revise): ").strip().lower()
         if ans == "y":
             return {"hitl_approved": True, "status": "approved"}
         elif ans == "r":
-            feedback = input("Feedback para o LLM: ")
+            feedback = input("Feedback for LLM: ")
             return {
                 "hitl_approved": False,
                 "messages": [HumanMessage(content=f"Human feedback: {feedback}")],

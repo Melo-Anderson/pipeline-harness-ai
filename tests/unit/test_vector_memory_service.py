@@ -57,7 +57,7 @@ def test_reindex_gold_examples():
         "examples": [
             {
                 "yaml_content": "schema_version: '1.0'",
-                "description": "Exemplo canonico ingestion",
+                "description": "Canonical ingestion example",
                 "compute_engine": "spark",
             }
         ]

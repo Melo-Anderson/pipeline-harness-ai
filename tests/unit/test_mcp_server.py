@@ -33,7 +33,7 @@ def test_handle_get_table_schema():
     mock_col.name = "customer_id"
     mock_col.data_type = "VARCHAR"
     mock_col.is_primary_key = True
-    mock_col.description = "ID do cliente"
+    mock_col.description = "Customer ID"
     mock_col.policy_tags = ["PII"]
     mock_obj.columns = [mock_col]
 

@@ -19,7 +19,7 @@ def make_audit_node(
         trail = AuditTrail(
             run_id=run_id,
             user_prompt=state.get("user_prompt", ""),
-            model_used="unknown",  # Simplificacao
+            model_used="unknown",
             total_iterations=state.get("iteration_count", 0),
             token_usage=0,
             timestamp=datetime.now(UTC).isoformat(),
@@ -37,7 +37,7 @@ def make_audit_node(
         with open(audit_path, "w", encoding="utf-8") as f:
             f.write(trail.model_dump_json(indent=2))
 
-        # Auto-inserção no pgvector de novos YAMLs aprovados
+        # Auto-insert approved YAML into pgvector
         if vector_storage_port and embedding_port and yaml_content:
             try:
                 user_prompt = state.get("user_prompt", "")
@@ -63,7 +63,7 @@ def make_audit_node(
                 )
                 vector_storage_port.insert_gold_example(record)
             except Exception as exc:
-                logger.warning("Falha ao auto-inserir YAML aprovado no pgvector: %s", exc)
+                logger.warning("Failed to auto-insert approved YAML into pgvector: %s", exc)
 
         return {"audit_trail": trail, "output_yaml_path": yaml_path, "status": "approved"}
 

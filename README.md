@@ -1,48 +1,48 @@
 # YAML Harness Engine AI 🚀
 
-> Motor de IA autônomo baseado em **Harness Engineering**, **LangGraph**, **RAG Vetorial (pgvector)**, **Model Context Protocol (MCP)** e **Clean Architecture** para geração, validação determinística e refinamento autônomo de especificações de pipeline de dados em YAML.
+> Autonomous AI Engine based on **Harness Engineering**, **LangGraph**, **Vector RAG (pgvector)**, **Model Context Protocol (MCP)**, and **Clean Architecture** for deterministic generation, validation, and self-refinement of data pipeline specifications in YAML.
 
 ---
 
-## 📌 Visão Geral & Motivação do Estudo
+## 📌 Overview & Study Motivation
 
-O **`pipeline-harness-ai`** foi desenvolvido como um **projeto de estudo e experimentação prática profunda** em engenharia de sistemas com IA generativa. Seu objetivo é atuar como o motor gerador de especificações YAML para a plataforma [`clean-data-platform-airflow`](https://github.com/Melo-Anderson/clean-data-platform-airflow), convertendo prompts em linguagem natural em especificações de pipeline válidas, otimizadas e diretamente executáveis.
+The **`pipeline-harness-ai`** project was developed as a **deep study and practical experimentation lab** in software systems engineering with generative AI. Its goal is to act as the YAML specification generator for the [`clean-data-platform-airflow`](https://github.com/Melo-Anderson/clean-data-platform-airflow) platform, translating natural language prompts into valid, optimized, and directly executable data pipeline specifications.
 
-A motivação central deste laboratório foi explorar e testar em código real os limites de padrões modernos da indústria:
-1. **Harness Engineering & Loop de Feedback:** Substituir avaliações subjetivas de LLMs por **guardrails determinísticos e testes automatizados** contra APIs e contratos reais da plataforma.
-2. **Graph Engineering:** Avaliar a estruturação de fluxos de agentes como grafos de estado tipados no **LangGraph**.
-3. **Memória Vetorial & RAG Anti-Drift:** Implementar persistência de exemplos canônicos com **pgvector** e embeddings agnósticos para ancorar (*grounding*) a geração de código.
-4. **Model Context Protocol (MCP):** Expor ferramentas e recursos do motor de engenharia diretamente para assistentes e IDEs modernas (Cursor, Claude Desktop, VS Code).
-
----
-
-## 📸 Demonstração de Execução Real E2E
-
-Abaixo está a execução do fluxo autônomo completo do LangGraph no terminal, validando e gerando o YAML final de forma determinística:
-
-![Execução Real E2E](docs/images/teste_real.png)
+The core motivation of this lab was to explore and test the boundaries of modern industry patterns in real code:
+1. **Harness Engineering & Feedback Loop:** Replacing subjective LLM evaluations with **deterministic guardrails and automated tests** running against real platform APIs and contracts.
+2. **Graph Engineering:** Evaluating agent workflow orchestration as typed state graphs in **LangGraph**.
+3. **Vector Memory & Anti-Drift RAG:** Implementing canonical gold example persistence using **pgvector** and provider-agnostic embeddings to ground code generation.
+4. **Model Context Protocol (MCP):** Exposing engine tools and resources directly to modern AI assistants and IDEs (Cursor, Claude Desktop, VS Code).
 
 ---
 
-## 🔄 Fluxo de Orquestração do LangGraph
+## 📸 Real End-to-End Execution Demo
 
-O motor utiliza um grafo de estados tipado (`HarnessState`) no **LangGraph** composto por 7 nós principais e bifurcações condicionais:
+Below is the execution of the complete autonomous LangGraph workflow in the terminal, deterministically generating and validating the final YAML specification:
+
+![Real E2E Execution](docs/images/teste_real.png)
+
+---
+
+## 🔄 LangGraph Orchestration Flow
+
+The engine utilizes a typed state graph (`HarnessState`) in **LangGraph** composed of 7 primary nodes with conditional branching:
 
 ```mermaid
 graph TD
-    __start__([🚀 START]) --> context_node[1. context_node<br/><i>Busca Catálogo, RAG pgvector & Schemas</i>]
-    context_node --> planner_node[2. planner_node<br/><i>Gera Estratégia de Carga & DW</i>]
-    planner_node --> generator_node[3. generator_node<br/><i>Gera Spec YAML via Structured Output</i>]
-    generator_node --> guardrail_node[4. guardrail_node<br/><i>Validação Sintática & Semântica na API</i>]
+    __start__([🚀 START]) --> context_node[1. context_node<br/><i>Fetch Catalog, RAG pgvector & Schemas</i>]
+    context_node --> planner_node[2. planner_node<br/><i>Generate Load & DW Strategy</i>]
+    planner_node --> generator_node[3. generator_node<br/><i>Synthesize YAML Spec via Structured Output</i>]
+    generator_node --> guardrail_node[4. guardrail_node<br/><i>Syntactic & Semantic API Validation</i>]
     
-    guardrail_node -- Validação Aprovada --> hitl_node[5. hitl_node<br/><i>Human-In-The-Loop / Auto-Approve</i>]
-    guardrail_node -- Erros & Iterações < Max --> enricher_node[6. enricher_node<br/><i>Enriquece Prompt com Feedback de Erros</i>]
-    guardrail_node -- Max Iterações Atingido --> failed_node[Failed Node<br/><i>Status: failed_max_iterations</i>]
+    guardrail_node -- Validation Passed --> hitl_node[5. hitl_node<br/><i>Human-In-The-Loop / Auto-Approve</i>]
+    guardrail_node -- Errors & Iterations < Max --> enricher_node[6. enricher_node<br/><i>Enrich Prompt with Error Feedback</i>]
+    guardrail_node -- Max Iterations Reached --> failed_node[Failed Node<br/><i>Status: failed_max_iterations</i>]
     
     enricher_node --> generator_node
     
-    hitl_node -- Aprovar (proceed) --> audit_node[7. audit_node<br/><i>Gera Trilha de Auditoria & Grava Memória</i>]
-    hitl_node -- Revisar (revise) --> enricher_node
+    hitl_node -- Approve (proceed) --> audit_node[7. audit_node<br/><i>Emit Audit Trail & Persist Memory</i>]
+    hitl_node -- Revise (revise) --> enricher_node
     
     audit_node --> __end__([🏁 END])
     failed_node --> __end__
@@ -50,138 +50,138 @@ graph TD
 
 ---
 
-## 🛠️ Detalhamento dos Nós e Harness Engineering
+## 🛠️ Node Breakdown & Harness Engineering
 
-| Nó | Responsabilidade | Mecanismos de Guardrail, RAG & Adaptação |
+| Node | Responsibility | Guardrails, RAG & Adaptation Mechanisms |
 |---|---|---|
-| **1. `context_node`** | Recuperação Multidimensional & RAG | Consulta o catálogo relacional (`DbSchemaReader`), métricas de volumetria (`StorageMetricsReader`), JSON Schema do contrato (`HttpPlatformReader`) e realiza **busca semântica por cossenos no `pgvector`** (`PgVectorStorageAdapter` + `EmbeddingPort`) com fallback transparente para a API da plataforma. |
-| **2. `planner_node`** | Planejamento de DW & Estratégia | Decompõe o objetivo em um `PipelinePlan` estruturado, decidindo estratégia de carga (`full_load`, `incremental`, `cdc`), motor de execução, colunas de particionamento e necessidade de governança PII. |
-| **3. `generator_node`** | Geração Estruturada LLM | Utiliza **Structured Output (Pydantic v2)** via `PipelineSpec`, injetando dinamicamente os *gold examples* recuperados via RAG no prompt especializado de síntese. |
-| **4. `guardrail_node`** | Validação Externa Determinística | Submete o YAML gerado diretamente para a API REST da Plataforma (`POST /v1/harness/validate`), garantindo conformidade contra contratos vivos e regras de CI da plataforma. |
-| **5. `enricher_node`** | Loop de Feedback Corretivo | Em caso de erro na validação, formata os códigos de erro e *JSON Pointers* estruturados para guiar o LLM nas iterações de autocorreção. |
-| **6. `hitl_node`** | Human-In-The-Loop (HITL) | Permite revisão humana interativa no terminal ou operação programática com auto-aprovação. |
-| **7. `audit_node`** | Auditoria & Memória Vetorial | Grava a especificação YAML final, exporta a trilha imutável em JSON (`AuditTrail`) e persiste os exemplos recém-aprovados na base vetorial para autoalimentação do RAG. |
+| **1. `context_node`** | Multidimensional Retrieval & RAG | Queries relational catalog (`DbSchemaReader`), historical volumetric metrics (`StorageMetricsReader`), JSON Schema contracts (`HttpPlatformReader`), and performs **cosine semantic search in `pgvector`** (`PgVectorStorageAdapter` + `EmbeddingPort`) with transparent fallback to the platform API. |
+| **2. `planner_node`** | DW Strategy & Planning | Decomposes user intent into a structured `PipelinePlan`, choosing load strategy (`full_load`, `incremental`, `cdc`), compute engine, partitioning columns, and PII governance requirements. |
+| **3. `generator_node`** | Structured LLM Generation | Uses **Structured Output (Pydantic v2)** via `PipelineSpec`, dynamically injecting canonical gold examples retrieved via RAG into a specialized synthesis prompt. |
+| **4. `guardrail_node`** | Deterministic External Validation | Submits generated YAML directly to the platform REST API (`POST /v1/harness/validate`), ensuring full compliance with live contracts and CI rules. |
+| **5. `enricher_node`** | Corrective Feedback Loop | On validation failures, formats error codes and structured *JSON Pointers* to guide the LLM through self-correction iterations. |
+| **6. `hitl_node`** | Human-In-The-Loop (HITL) | Supports interactive human review via CLI or programmatic automated approval. |
+| **7. `audit_node`** | Audit & Vector Memory | Writes the final YAML specification, exports an immutable JSON audit log (`AuditTrail`), and persists newly approved examples into the vector store to continuously feed the RAG system. |
 
 ---
 
-## 🧠 Memória Vetorial (RAG com `pgvector`) & Servidor MCP
+## 🧠 Vector Memory (RAG with `pgvector`) & MCP Server
 
-Como continuidade da evolução do estudo, foram adicionados dois pilares de infraestrutura:
+As part of this study's ongoing evolution, two major infrastructure capabilities were introduced:
 
-### 1. RAG Semântico com `pgvector` & Alembic
-- **Schema Dedicado (`harness`):** Tabela `gold_pipeline_embeddings` com extensão vetorial `vector(1536)` gerenciada via migrações Alembic.
-- **Embedding Factory Agnóstica:** Suporte desacoplado para múltiplos provedores (`openai`, `google-genai`, `fake` determinístico) através do `embedding_factory.py`.
-- **Sincronização & Anti-Drift:** Mecanismo de reindexação para sincronizar e revalidar os YAMLs canônicos da plataforma.
+### 1. Semantic RAG with `pgvector` & Alembic
+- **Dedicated Schema (`harness`):** `gold_pipeline_embeddings` table with `vector(1536)` extension managed via Alembic migrations.
+- **Agnostic Embedding Factory:** Decoupled support for multiple embedding providers (`openai`, `google-genai`, deterministic `fake`) via `embedding_factory.py`.
+- **Synchronization & Anti-Drift:** Reindexing mechanisms to synchronize and revalidate canonical platform YAMLs against contract updates.
 
 ### 2. Model Context Protocol (MCP) Server
-O projeto disponibiliza um servidor **FastMCP** em `src.infrastructure.mcp.server`, permitindo que assistentes e IDEs modernas (Cursor, Claude Desktop, VS Code) consumam as ferramentas do harness nativamente:
-- **Tools MCP:** `get_table_schema`, `get_gold_examples`, `validate_pipeline_yaml`, `generate_pipeline_yaml`.
-- **Resources MCP:** `schema://{pipeline_type}`, `catalog://{asset_name}`, `audit://{run_id}`.
+The project exposes a **FastMCP** server in `src.infrastructure.mcp.server`, allowing modern AI coding assistants and IDEs (Cursor, Claude Desktop, VS Code) to consume harness capabilities natively:
+- **MCP Tools:** `get_table_schema`, `get_gold_examples`, `validate_pipeline_yaml`, `generate_pipeline_yaml`.
+- **MCP Resources:** `schema://{pipeline_type}`, `catalog://{asset_name}`, `audit://{run_id}`.
 
 ---
 
-## 🏗️ Pilares de Arquitetura & Qualidade
+## 🏗️ Architecture Pillars & Quality Standards
 
-- **Clean Architecture (Ports & Adapters):** Isolamento total das regras de negócio em `domain/`. Adaptações de infraestrutura (SQLAlchemy, pgvector, HTTP Clients, File Storage) implementam interfaces declaradas em `domain/ports.py`.
-- **Provedores de IA Plugáveis:** LLMs e Embeddings são instanciados via factories desacopladas (`llm_factory` e `embedding_factory`), suportando múltiplos provedores sem acoplamento a SDKs proprietários.
-- **Validação Autônoma em Loop:** O agente corrige seus próprios erros com base em respostas determinísticas da API de validação da plataforma.
-- **Python 3.12+ & Ferramental Moderno:**
-  - Gerenciamento ultra-rápido de dependências com [`uv`](https://github.com/astral-sh/uv).
-  - Tipagem estática rigorosa (`mypy`).
-  - Linter e formatador de alto desempenho (`ruff`).
-  - Suíte completa de testes de unidade, integração e E2E (`pytest`).
-
----
-
-## 💡 Reflexão Arquitetural: Lições do Estudo & Simplificação para Produção
-
-A experimentação prática com este projeto permitiu confrontar padrões comuns de orquestração de IA com a realidade da engenharia de software tradicional, distinguindo a **complexidade essencial** (o que gera resultado prático) da **complexidade acidental** (estruturas que podem ser simplificadas em um projeto similar para produção).
-
-### 🎯 O que faz muito bem feito (Complexidade Essencial)
-- **Harness com Validação Determinística:** A confiabilidade do sistema não vem de colocar um LLM para avaliar outro LLM por meio de textos subjetivos ou prompts em linguagem natural. Ela vem da **API de compilação/teste da plataforma** (`POST /v1/harness/validate`) e dos esquemas Pydantic. Esse feedback loop determinístico (*gerar → testar com compilador → corrigir com erros exatos*) é a base sólida que garante código funcional em produção.
-- **Grounding Factual (Catálogo + RAG no `pgvector`):** Alimentar o modelo com metadados reais de colunas e exemplos canônicos aprovados elimina a necessidade do modelo "adivinhar" convenções e esquemas internos.
-- **Clean Architecture e Desacoplamento:** A separação estrita de portas e adaptadores permitiu mockar serviços de rede com precisão e alternar entre provedores de LLM/Embeddings sem alterar o núcleo da aplicação.
-
-### ⚙️ O que poderia ser simplificado em um Projeto Similar para Produção (Redução de Complexidade & Custos)
-- **Unificação de `Planner` e `Generator` (Single-Pass Generation):**
-  - *No estudo:* A separação entre planejar (`planner_node`) e gerar o YAML (`generator_node`) em duas chamadas de LLM em série foi útil para isolar o raciocínio de DW.
-  - *Em produção:* Para performar custos, reduzir a latência de ponta a ponta e mitigar falhas cumulativas de etapas sequenciais, a estratégia de planejamento e a síntese do YAML poderiam ser unificadas em uma única chamada de inferência com *Structured Output*, reduzindo o consumo de tokens e o tempo de resposta substancialmente.
-- **Loop Nativo em Código vs. Overhead de Grafo:**
-  - *No estudo:* O LangGraph foi utilizado para mapear explicitamente cada nó, aresta e transição de estado.
-  - *Em produção:* Para fluxos que são essencialmente lineares com um retry condicional (*buscar contexto → gerar spec → validar na API → se inválido repetir*), a adoção de uma função nativa com um loop `while/for` em Python puro atenderia com a mesma eficácia e reduziria drasticamente as dependências de framework e a complexidade de manutenção do ecossistema.
-- **Human-in-the-Loop Assíncrono:**
-  - Em fluxos corporativos automatizados, o prompt interativo de terminal (`hitl_node`) pode ser substituído por eventos assíncronos (como abertura de Pull Request no Git ou aprovação via Webhook).
+- **Clean Architecture (Ports & Adapters):** Complete isolation of business rules in `domain/`. Infrastructure adapters (SQLAlchemy, pgvector, HTTP Clients, File Storage) implement interfaces declared in `domain/ports.py`.
+- **Pluggable AI Providers:** LLMs and Embeddings are instantiated via decoupled factories (`llm_factory` and `embedding_factory`), supporting multiple providers without vendor lock-in.
+- **Autonomous Feedback Loop:** The agent self-corrects based on deterministic validation responses from the platform API.
+- **Python 3.12+ & Modern Tooling:**
+  - Ultra-fast dependency management with [`uv`](https://github.com/astral-sh/uv).
+  - Strict static typing (`mypy`).
+  - High-performance linter and formatter (`ruff`).
+  - Comprehensive unit, integration, and E2E test suite (`pytest`).
 
 ---
 
-## 🚀 Como Executar
+## 💡 Architectural Takeaways: Study Lessons vs. Production Simplification
 
-### 1. Configuração do Ambiente
+Hands-on experimentation with this project allowed contrasting popular AI orchestration patterns with traditional software engineering realities, clearly distinguishing **essential complexity** (what delivers real value) from **accidental complexity** (structures that can be streamlined in a production environment).
+
+### 🎯 What Works Exceptionally Well (Essential Complexity)
+- **Harness with Deterministic Validation:** System reliability does not come from having one LLM evaluate another LLM through subjective text or natural language prompts. It comes from the **platform compiler/test API** (`POST /v1/harness/validate`) and Pydantic schemas. This deterministic feedback loop (*generate → test with compiler → fix with exact error pointers*) is the solid foundation ensuring functional code in production.
+- **Factual Grounding (Catalog + `pgvector` RAG):** Feeding the model real column metadata and approved canonical examples eliminates the need for the model to "guess" internal schemas and conventions.
+- **Clean Architecture & Decoupling:** Strict separation of ports and adapters enabled precise network mocking and seamless swapping of LLM/embedding providers without modifying core application logic.
+
+### ⚙️ What Could Be Simplified in a Similar Production Project (Cost & Complexity Reduction)
+- **Unified `Planner` and `Generator` (Single-Pass Generation):**
+  - *In the study:* Splitting planning (`planner_node`) and YAML generation (`generator_node`) into two sequential LLM calls helped isolate DW decision logic.
+  - *In production:* To optimize costs, reduce end-to-end latency, and mitigate cumulative failure rates across chained steps, planning and YAML synthesis can be unified into a single inference call with *Structured Output*, substantially lowering token consumption and response times.
+- **Native Code Loop vs. Graph Overhead:**
+  - *In the study:* LangGraph was used to explicitly map each node, edge, and state transition.
+  - *In production:* For workflows that are essentially linear with conditional retries (*fetch context → generate spec → validate against API → retry if invalid*), a simple native `while/for` loop in pure Python would achieve identical efficacy while drastically reducing framework dependencies and ecosystem maintenance overhead.
+- **Asynchronous Human-in-the-Loop:**
+  - In automated corporate workflows, interactive terminal prompts (`hitl_node`) can be replaced by asynchronous events (such as Git Pull Requests or CI/CD Webhooks).
+
+---
+
+## 🚀 How to Run
+
+### 1. Environment Setup
 
 ```bash
 cp .env.example .env
 uv sync
 ```
 
-### 2. Teste E2E (Fluxo Completo da Plataforma)
+### 2. End-to-End Test (Full Platform Workflow)
 
 ```bash
-# Executa o teste End-to-End conectando aos serviços da plataforma
-uv run python scripts/test_e2e.py --prompt "Criar pipeline de ingestao incremental para a api CustomerCreate do asset e2e-api-store-mock-asset"
+# Run End-to-End test connecting to platform mock services
+uv run python scripts/test_e2e.py --prompt "Create incremental ingestion pipeline for CustomerCreate API in asset e2e-api-store-mock-asset"
 ```
 
-### 3. Interface CLI (Typer & Rich)
+### 3. CLI Interface (Typer & Rich)
 
 ```bash
-# Gerar especificação via terminal
+# Generate specification via CLI
 uv run python -m src.infrastructure.cli generate "Ingest sales table daily at 6am"
 
-# Reindexar gold examples no pgvector
+# Reindex gold examples in pgvector
 uv run python -m src.infrastructure.cli reindex-gold-examples
 ```
 
-### 4. Servidor FastMCP (Model Context Protocol)
+### 4. FastMCP Server (Model Context Protocol)
 
 ```bash
-# Modo STDIO (para Cursor / Claude Desktop / VS Code)
+# STDIO Mode (for Cursor / Claude Desktop / VS Code)
 uv run python -m src.infrastructure.mcp.server
 
-# Modo SSE (para microserviços HTTP)
+# SSE Mode (for HTTP microservices)
 uv run python -m src.infrastructure.mcp.server --transport sse --port 8001
 ```
 
-### 5. API REST (FastAPI)
+### 5. REST API (FastAPI)
 
 ```bash
-# Iniciar o servidor FastAPI
+# Start FastAPI server
 uv run uvicorn src.infrastructure.api.app:app --reload
 
-# Requisição POST
+# POST Request
 curl -X POST http://localhost:8000/api/v1/generate-yaml \
   -H "Content-Type: application/json" \
   -d '{"prompt": "Ingest Oracle sales table"}'
 ```
 
-### 6. Executar Suíte de Testes
+### 6. Run Test Suite
 
 ```bash
-# Executar todos os testes de unidade, integração e MCP (94 testes)
+# Run full unit, integration, and MCP test suite (94 tests)
 uv run pytest
 ```
 
 ---
 
-## ⚙️ Variáveis de Ambiente
+## ⚙️ Environment Variables
 
-| Variável | Obrigatório | Padrão | Descrição |
+| Variable | Required | Default | Description |
 |---|---|---|---|
-| `OPENAI_API_KEY` | Não | — | Chave de API da OpenAI (se provedor for `openai`) |
-| `OPENAI_MODEL` | Não | `gpt-4o` | Modelo de linguagem da OpenAI |
-| `GOOGLE_API_KEY` | Não | — | Chave de API do Google Gemini (se provedor for `google-genai`) |
-| `LLM_PROVIDER` | Não | `openai` | Provedor de LLM (`openai`, `google-genai`, `fake`) |
-| `EMBEDDING_PROVIDER` | Não | `openai` | Provedor de embeddings (`openai`, `google-genai`, `fake`) |
-| `EMBEDDING_MODEL` | Não | `text-embedding-3-small` | Nome do modelo de embeddings |
-| `PLATFORM_DB_URL` | Sim | — | DSN PostgreSQL para metadados e schema `harness` (pgvector) |
-| `METRICS_STORAGE_PATH` | Não | `./data/metrics` | Diretório de armazenamento de métricas em JSON |
-| `MAX_ITERATIONS` | Não | `3` | Limite máximo de tentativas do loop de guardrails |
-| `LANGSMITH_API_KEY` | Não | — | Chave para rastreamento no LangSmith |
+| `OPENAI_API_KEY` | No | — | OpenAI API Key (if provider is `openai`) |
+| `OPENAI_MODEL` | No | `gpt-4o` | OpenAI language model name |
+| `GOOGLE_API_KEY` | No | — | Google Gemini API Key (if provider is `google-genai`) |
+| `LLM_PROVIDER` | No | `openai` | LLM Provider (`openai`, `google-genai`, `fake`) |
+| `EMBEDDING_PROVIDER` | No | `openai` | Embedding Provider (`openai`, `google-genai`, `fake`) |
+| `EMBEDDING_MODEL` | No | `text-embedding-3-small` | Embedding model name |
+| `PLATFORM_DB_URL` | Yes | — | PostgreSQL DSN for platform metadata and `harness` schema (pgvector) |
+| `METRICS_STORAGE_PATH` | No | `./data/metrics` | Directory path for JSON volumetric metrics |
+| `MAX_ITERATIONS` | No | `3` | Maximum loop iterations for guardrail self-correction |
+| `LANGSMITH_API_KEY` | No | — | API key for LangSmith tracing |

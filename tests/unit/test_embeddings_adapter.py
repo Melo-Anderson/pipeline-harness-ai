@@ -18,7 +18,7 @@ def test_embedding_adapter_init():
 
 def test_embedding_adapter_missing_key():
     adapter = LangChainEmbeddingAdapter(provider="openai", api_key="", model="text-embedding-3-small")
-    with pytest.raises(ValueError, match="API key não configurada"):
+    with pytest.raises(ValueError, match="API key not configured"):
         adapter.embed_text("sample prompt")
 
 
