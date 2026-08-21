@@ -34,7 +34,7 @@ def test_get_json_schema_failure_fallback():
 
 @respx.mock
 def test_get_gold_examples_with_params():
-    url = f"{settings.platform_examples_url}?type=ingestion&compute_engine=spark&limit=5"
+    url = f"{settings.platform_examples_url}?type=ingestion&limit=5&source_asset_id=asset_sales"
     respx.get(url).mock(
         return_value=httpx.Response(200, json={"examples": [{"id": 1}]})
     )
@@ -45,7 +45,7 @@ def test_get_gold_examples_with_params():
     )
     examples = reader.get_gold_examples(
         pipeline_type="ingestion",
-        compute_engine="spark",
+        source_asset_id="asset_sales",
         limit=5
     )
     assert examples == {"examples": [{"id": 1}]}

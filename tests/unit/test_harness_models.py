@@ -1,9 +1,13 @@
 from src.domain.schemas.harness_models import (
     AuditTrail,
     EnrichedError,
+    GoldEmbeddingRecord,
     PipelinePlan,
+    ValidationEvent,
     ValidationResult,
+    VectorSearchResult,
 )
+
 
 
 def test_pipeline_plan_relational():
@@ -65,3 +69,49 @@ def test_validation_result_with_errors():
     )
     assert not result.is_valid
     assert result.errors[0].error_code == "E1"
+
+
+def test_validation_event_and_audit_trail():
+    event = ValidationEvent(
+        attempt=1,
+        is_valid=False,
+        errors=["Required field missing"],
+        timestamp="2026-08-20T15:30:00Z",
+    )
+    trail = AuditTrail(
+        run_id="run-1",
+        user_prompt="prompt",
+        model_used="gpt-4o",
+        total_iterations=1,
+        token_usage=100,
+        timestamp="2026-08-20T15:30:00Z",
+        validation_history=[event],
+    )
+    assert len(trail.validation_history) == 1
+
+
+def test_vector_search_result():
+    res = VectorSearchResult(
+        id="uuid-1",
+        pipeline_type="relational",
+        compute_engine="spark",
+        description="Ingestion example",
+        yaml_content="pipeline_id: p1",
+        similarity=0.88,
+    )
+    assert res.id == "uuid-1"
+    assert res.similarity == 0.88
+
+
+def test_gold_embedding_record():
+    rec = GoldEmbeddingRecord(
+        pipeline_type="api",
+        description="API pipeline",
+        yaml_content="pipeline_id: p2",
+        embedding=[0.1, 0.2, 0.3],
+    )
+    assert rec.is_active is True
+    assert rec.platform_schema_version is None
+    assert rec.compute_engine is None
+    assert rec.embedding == [0.1, 0.2, 0.3]
+
