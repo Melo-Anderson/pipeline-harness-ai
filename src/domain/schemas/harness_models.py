@@ -30,6 +30,15 @@ class EnrichedError(BaseModel):
     suggestion: str
 
 
+class ValidationEvent(BaseModel):
+    """Registro tipado de uma tentativa de validacao no historico de auditoria."""
+
+    attempt: int
+    is_valid: bool = False
+    errors: list[Any] = Field(default_factory=list)
+    timestamp: str | None = None
+
+
 class AuditTrail(BaseModel):
     """Artefato imutavel de rastreabilidade por execucao."""
 
@@ -39,7 +48,7 @@ class AuditTrail(BaseModel):
     total_iterations: int = Field(ge=0)
     token_usage: int = Field(ge=0)
     timestamp: str
-    validation_history: list[dict[str, Any]] = Field(default_factory=list)
+    validation_history: list[ValidationEvent | dict[str, Any]] = Field(default_factory=list)
 
 
 class ValidationResult(BaseModel):
@@ -47,3 +56,30 @@ class ValidationResult(BaseModel):
 
     is_valid: bool
     errors: list[EnrichedError] = Field(default_factory=list)
+
+
+class VectorSearchResult(BaseModel):
+    """Resultado retornado da busca por similaridade de cossenos no pgvector."""
+
+    id: str
+    pipeline_type: str
+    compute_engine: str | None = None
+    description: str
+    yaml_content: str
+    similarity: float
+
+
+class GoldEmbeddingRecord(BaseModel):
+    """Registro canonico para persistencia e revalidacao de YAMLs no pgvector."""
+
+    id: str | None = None
+    platform_schema_version: str | None = None
+    pipeline_type: str
+    compute_engine: str | None = None
+    description: str
+    yaml_content: str
+    embedding: list[float] | None = None
+    is_active: bool = True
+    last_validated_at: str | None = None
+    created_at: str | None = None
+
