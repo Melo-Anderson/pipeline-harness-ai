@@ -17,7 +17,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from src.domain.ports import MetadataPort, MetricsPort, PlatformExamplesPort, PlatformSchemaPort
+from src.domain.ports import (
+    EmbeddingPort,
+    MetadataPort,
+    MetricsPort,
+    PlatformExamplesPort,
+    PlatformSchemaPort,
+    VectorStoragePort,
+)
 
 
 def make_context_node(
@@ -25,8 +32,10 @@ def make_context_node(
     metrics_port: MetricsPort,
     schema_port: PlatformSchemaPort | None = None,
     examples_port: PlatformExamplesPort | None = None,
+    vector_storage_port: VectorStoragePort | None = None,
+    embedding_port: EmbeddingPort | None = None,
 ) -> Any:
-    """Factory: returns context_node closed over injected ports."""
+    """Factory: returns context_node closed over injected ports with hierarchical RAG fallback."""
 
     def context_node(state: dict[str, Any]) -> dict[str, Any]:
         existing_ctx = state.get("context", {})
@@ -64,17 +73,36 @@ def make_context_node(
                     f"Metadata asset '{asset_name}' / object '{object_name}' not found in platform metadata store."
                 )
 
-        # Platform HTTP queries
+        # Platform HTTP Schema query
         platform_schema = (
             schema_port.get_json_schema(pipeline_type=pipeline_type, endpoint_type=endpoint_type)
             if schema_port
             else {}
         )
-        gold_examples = (
-            examples_port.get_gold_examples(pipeline_type=pipeline_type, source_asset_id=asset_name)
-            if examples_port
-            else {}
-        )
+
+        # Hierarchical Gold Examples Query: RAG (pgvector) -> Fallback (Platform API)
+        gold_examples: dict[str, Any] = {}
+        if vector_storage_port and embedding_port and user_prompt:
+            try:
+                emb = embedding_port.embed_text(user_prompt)
+                vec_results = vector_storage_port.search_similar(
+                    embedding=emb,
+                    pipeline_type=pipeline_type,
+                )
+                if vec_results:
+                    gold_examples = {
+                        "source": "pgvector_rag",
+                        "pipeline_type": pipeline_type,
+                        "total_count": len(vec_results),
+                        "examples": [r.model_dump() for r in vec_results],
+                    }
+            except Exception as exc:
+                warnings.append(f"Vector search failed, falling back to API: {exc}")
+
+        if not gold_examples and examples_port:
+            gold_examples = examples_port.get_gold_examples(
+                pipeline_type=pipeline_type, source_asset_id=asset_name
+            )
 
         context: dict[str, Any] = {
             "user_prompt": user_prompt,
@@ -118,17 +146,8 @@ def _extract_asset_name(prompt: str) -> str | None:
 
 
 def _extract_object_name(prompt: str) -> str | None:
-    match = re.search(r"(?:tabela|objeto|table|object|schema|schemas)[:\s]+([a-zA-Z0-9_\-\/]+)", prompt, re.IGNORECASE)
-    if match:
-        res = match.group(1).strip("'\"")
-        if res.startswith("http"):
-            # Se capturou a URL inteira, tenta pegar a entidade final
-            sub = re.search(r"schemas/([a-zA-Z0-9_\-]+)", res, re.IGNORECASE)
-            if sub:
-                return sub.group(1).strip("'\"")
-        return res
-    match_schemas = re.search(r"schemas/([a-zA-Z0-9_\-]+)", prompt, re.IGNORECASE)
-    return match_schemas.group(1).strip("'\"") if match_schemas else None
+    match = re.search(r"(?:tabela|objeto|table|object)[:\s]+([a-zA-Z0-9_\-]+)", prompt, re.IGNORECASE)
+    return match.group(1).strip("'\"") if match else None
 
 
 

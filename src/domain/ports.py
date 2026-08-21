@@ -6,7 +6,10 @@ Implementations live in infrastructure/adapters/.
 
 from __future__ import annotations
 
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
+
+if TYPE_CHECKING:
+    from src.domain.schemas.harness_models import GoldEmbeddingRecord, VectorSearchResult
 
 
 class ColumnMetadata(Protocol):
@@ -50,8 +53,6 @@ class MetricsPort(Protocol):
     def get_execution_metrics(self, object_id: str) -> ExecutionMetrics | None: ...
 
 
-from typing import runtime_checkable
-
 @runtime_checkable
 class PlatformSchemaPort(Protocol):
     """Porta read-only para buscar JSON Schema do contrato YAML da plataforma."""
@@ -66,10 +67,8 @@ class PlatformExamplesPort(Protocol):
     def get_gold_examples(
         self,
         pipeline_type: str,
-        compute_engine: str | None = None,
-        transform_engine: str | None = None,
         source_asset_id: str | None = None,
-        limit: int = 3,
+        limit: int | None = None,
     ) -> dict[str, Any]: ...
 
 
@@ -85,3 +84,34 @@ class PlatformYamlPort(Protocol):
     """Porta read-only para recuperar a versão YAML mais recente de uma pipeline existente."""
 
     def get_pipeline_yaml(self, pipeline_id: str) -> dict[str, str] | None: ...
+
+
+@runtime_checkable
+class EmbeddingPort(Protocol):
+    """Porta para geração de embeddings vetoriais."""
+
+    def embed_text(self, text: str) -> list[float]: ...
+    def embed_documents(self, texts: list[str]) -> list[list[float]]: ...
+
+
+@runtime_checkable
+class VectorStoragePort(Protocol):
+    """Porta para persistência e busca semântica em banco vetorial (pgvector)."""
+
+    def search_similar(
+        self,
+        embedding: list[float],
+        pipeline_type: str | None = None,
+        limit: int | None = None,
+        similarity_threshold: float | None = None,
+    ) -> list[VectorSearchResult]: ...
+
+    def insert_gold_example(self, record: GoldEmbeddingRecord) -> str: ...
+
+    def get_all_active(self) -> list[GoldEmbeddingRecord]: ...
+
+    def deactivate_example(self, record_id: str) -> bool: ...
+
+    def update_validation_timestamp(self, record_id: str) -> bool: ...
+
+

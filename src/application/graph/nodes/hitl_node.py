@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from langchain_core.messages import HumanMessage
+
 
 def make_hitl_node(auto_approve: bool = False) -> Any:
     def hitl_node(state: dict[str, Any]) -> dict[str, Any]:
@@ -15,8 +17,6 @@ def make_hitl_node(auto_approve: bool = False) -> Any:
             return {"hitl_approved": True, "status": "approved"}
         elif ans == "r":
             feedback = input("Feedback para o LLM: ")
-            from langchain_core.messages import HumanMessage
-
             return {
                 "hitl_approved": False,
                 "messages": [HumanMessage(content=f"Human feedback: {feedback}")],

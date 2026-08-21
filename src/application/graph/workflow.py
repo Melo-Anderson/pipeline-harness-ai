@@ -14,7 +14,14 @@ from src.application.graph.nodes.guardrail_node import make_guardrail_node
 from src.application.graph.nodes.hitl_node import make_hitl_node
 from src.application.graph.nodes.planner_node import make_planner_node
 from src.application.graph.state import HarnessState
-from src.domain.ports import MetadataPort, MetricsPort, PlatformExamplesPort, PlatformSchemaPort
+from src.domain.ports import (
+    EmbeddingPort,
+    MetadataPort,
+    MetricsPort,
+    PlatformExamplesPort,
+    PlatformSchemaPort,
+    VectorStoragePort,
+)
 
 
 def build_graph(
@@ -22,20 +29,37 @@ def build_graph(
     metrics_port: MetricsPort,
     schema_port: PlatformSchemaPort | None = None,
     examples_port: PlatformExamplesPort | None = None,
+    vector_storage_port: VectorStoragePort | None = None,
+    embedding_port: EmbeddingPort | None = None,
     validation_port: Any = None,
     llm: BaseChatModel | None = None,
     auto_approve_hitl: bool = False,
 ) -> Any:
     graph = StateGraph(HarnessState)
     graph.add_node(
-        "context_node", make_context_node(metadata_port, metrics_port, schema_port, examples_port)
+        "context_node",
+        make_context_node(
+            metadata_port,
+            metrics_port,
+            schema_port,
+            examples_port,
+            vector_storage_port=vector_storage_port,
+            embedding_port=embedding_port,
+        ),
     )
     graph.add_node("planner_node", make_planner_node(llm))
     graph.add_node("generator_node", make_generator_node(llm=llm))
     graph.add_node("guardrail_node", make_guardrail_node(validation_port))
     graph.add_node("enricher_node", enricher_node)
     graph.add_node("hitl_node", make_hitl_node(auto_approve=auto_approve_hitl))
-    graph.add_node("audit_node", make_audit_node())
+    graph.add_node(
+        "audit_node",
+        make_audit_node(
+            vector_storage_port=vector_storage_port,
+            embedding_port=embedding_port,
+        ),
+    )
+
 
     def set_failed(state: dict[str, Any]) -> dict[str, Any]:
         return {"status": "failed_max_iterations"}
