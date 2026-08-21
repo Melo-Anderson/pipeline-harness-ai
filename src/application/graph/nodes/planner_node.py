@@ -19,12 +19,12 @@ pii_governance_required (true if PII columns in context).
 
 def make_planner_node(llm: Any = None) -> Any:
     if llm is None:
-        from src.config import settings
+        from src.infrastructure.llm_factory import get_llm
 
-        llm = ChatOpenAI(
-            model=settings.openai_model, temperature=0.0, api_key=settings.openai_api_key
-        )
-    structured_llm = llm.with_structured_output(PipelinePlan)
+        _llm = get_llm()
+    else:
+        _llm = llm
+    structured_llm = _llm.with_structured_output(PipelinePlan)
 
     def planner_node(state: dict[str, Any]) -> dict[str, Any]:
         ctx: dict[str, Any] = state.get("context", {})

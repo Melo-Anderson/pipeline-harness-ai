@@ -36,16 +36,12 @@ Follow the platform rules exactly. Do not add unknown fields. Do not omit requir
 """
 
 
-def make_generator_node(llm: ChatOpenAI | None = None) -> Any:
+def make_generator_node(llm: Any = None) -> Any:
     """Factory: returns generator_node closed over the injected LLM."""
     if llm is None:
-        from src.config import settings
+        from src.infrastructure.llm_factory import get_llm
 
-        _llm: ChatOpenAI = ChatOpenAI(
-            model=settings.openai_model,
-            temperature=settings.openai_temperature,
-            api_key=settings.openai_api_key,
-        )
+        _llm = get_llm()
     else:
         _llm = llm
     structured = _llm.with_structured_output(PipelineSpec)
@@ -55,10 +51,24 @@ def make_generator_node(llm: ChatOpenAI | None = None) -> Any:
         errors: list[str] = state.get("validation_errors", [])
         iteration: int = state.get("iteration_count", 0)
 
-        few_shot = "\n---\n".join(
-            f"# {ex['description']}\n{ex['yaml_snippet']}"
-            for ex in ctx.get("few_shot_examples", [])
-        )
+        # Dynamic Gold Examples from RAG / Platform API
+        example_lines = []
+        gold_examples = ctx.get("gold_examples", {})
+        if isinstance(gold_examples, dict) and "examples" in gold_examples:
+            for ex in gold_examples["examples"]:
+                if isinstance(ex, dict):
+                    desc = ex.get("description", "Gold example")
+                    yaml_c = ex.get("yaml_content") or ex.get("pipeline_yaml", "")
+                    if yaml_c:
+                        example_lines.append(f"# {desc}\n{yaml_c}")
+                elif isinstance(ex, str):
+                    example_lines.append(ex)
+
+        if not example_lines and "few_shot_examples" in ctx:
+            for ex in ctx["few_shot_examples"]:
+                example_lines.append(f"# {ex['description']}\n{ex.get('yaml_snippet', '')}")
+
+        few_shot = "\n---\n".join(example_lines) if example_lines else "No specific examples provided."
         system = _SYSTEM_TEMPLATE.format(
             platform_rules=ctx.get("platform_rules", ""),
             context_summary=_summarize_context(ctx),
@@ -73,13 +83,6 @@ def make_generator_node(llm: ChatOpenAI | None = None) -> Any:
 
         msgs = [SystemMessage(content=system), HumanMessage(content=human)]
         spec: PipelineSpec = structured.invoke(msgs)
-        
-        # Fallback de segurança: Garante pipeline_id não-vazio
-        if not spec.pipeline_id or not spec.pipeline_id.strip():
-            obj_name = ctx.get("object_name") or "pipeline"
-            clean_obj = re.sub(r"[^a-zA-Z0-9_]", "_", obj_name.lower())
-            p_type = ctx.get("pipeline_type") or "ingest"
-            spec.pipeline_id = f"p_{p_type}_{clean_obj}"
 
         yaml_content = dump(spec)
         return {
