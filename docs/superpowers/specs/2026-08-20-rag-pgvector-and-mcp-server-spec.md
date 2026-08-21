@@ -1,32 +1,32 @@
-# Especificação Técnica de Arquitetura: RAG Semântico (pgvector) & Servidor MCP (Model Context Protocol) 🚀
+# Technical Architecture Specification: Semantic RAG (pgvector) & MCP Server (Model Context Protocol) 🚀
 
-> **Data:** 20 de Agosto de 2026  
-> **Status:** Aprovado & Alinhado com o Usuário (/grill-me)  
-> **Projeto:** `pipeline-harness-ai`  
-> **Autor / Time:** Engenharia de IA & Plataforma de Dados  
-
----
-
-## 1. 📌 Decisões Arquiteturais Consolidadas
-
-Com base no processo de design e alinhamento de engenharia, foram firmadas as seguintes diretrizes:
-
-1. **Schema PostgreSQL Dedicado (`harness`) com Alembic Local:**
-   - As tabelas e índices vetoriais do Harness serão criadas dentro de um schema próprio (`harness.gold_pipeline_embeddings`), isoladas das tabelas da plataforma (`public.data_assets`, `public.data_elements`).
-   - O versionamento das DDLs e índices HNSW será gerenciado pelo **Alembic** dentro do próprio repositório `pipeline-harness-ai`.
-2. **Integração Hierárquica com Fallback (RAG + API):**
-   - O `context_node` prioriza a busca vetorial semântica no `pgvector`. Caso não haja correspondências acima do threshold de similaridade ou a tabela esteja vazia, faz fallback transparente para a API `/v1/harness/gold-examples` da plataforma.
-3. **Governança Ativa e Ciclo de Vida Híbrido:**
-   - Novos YAMLs aprovados no `audit_node` são automaticamente vetorizados e armazenados no banco.
-   - Rotina de auto-revalidação via CLI (`revalidate-memory`) submete periodicamente os YAMLs ativos contra o endpoint `/v1/harness/validate`, desativando (`is_active = FALSE`) exemplos que sofreram *Schema Drift*.
-4. **Servidor MCP com Transporte Duplo:**
-   - Suporte a `stdio` (integração local com Cursor, Claude Desktop e VS Code) e `SSE/HTTP` (para microsserviços e outros agentes corporativos em contêineres).
-5. **Observabilidade Nativa com LangSmith:**
-   - Tracing nativo ativado via variáveis de ambiente (`LANGCHAIN_TRACING_V2=true`), capturando nós, latência e consumo de tokens sem acoplamento de código.
+> **Date:** August 20, 2026  
+> **Status:** Approved & Aligned with User  
+> **Project:** `pipeline-harness-ai`  
+> **Author / Team:** AI Engineering & Data Platform  
 
 ---
 
-## 2. 🏗️ Desenho de Arquitetura (Clean Architecture)
+## 1. 📌 Consolidated Architectural Decisions
+
+Based on the engineering design and alignment process, the following guidelines were established:
+
+1. **Dedicated PostgreSQL Schema (`harness`) with Local Alembic:**
+   - Harness vector tables and indexes are created inside a dedicated schema (`harness.gold_pipeline_embeddings`), isolated from platform core tables (`public.data_assets`, `public.data_elements`).
+   - DDL versioning and HNSW index management are handled by **Alembic** within the `pipeline-harness-ai` repository.
+2. **Hierarchical Integration with Fallback (RAG + API):**
+   - `context_node` prioritizes semantic vector search in `pgvector`. When no matches satisfy the similarity threshold or the table is empty, it falls back transparently to the `/v1/harness/gold-examples` platform API.
+3. **Active Governance and Hybrid Lifecycle:**
+   - Newly approved YAML specifications in `audit_node` are automatically vectorized and persisted in the database.
+   - CLI auto-revalidation routine (`revalidate-memory`) periodically submits active YAMLs against the `/v1/harness/validate` endpoint, deactivating (`is_active = FALSE`) examples that suffered *Schema Drift*.
+4. **Dual-Transport MCP Server:**
+   - Support for `stdio` (local integration with Cursor, Claude Desktop, and VS Code) and `SSE/HTTP` (for containerized microservices and enterprise agents).
+5. **Native Observability with LangSmith:**
+   - Native tracing enabled via environment variables (`LANGCHAIN_TRACING_V2=true`), capturing node latency and token consumption without code coupling.
+
+---
+
+## 2. 🏗️ Architecture Design (Clean Architecture)
 
 ```mermaid
 graph TD
@@ -47,9 +47,9 @@ graph TD
     end
 
     subgraph "Storage & External Systems"
-        PostgresDB[("PostgreSQL\nSchema 'harness' (pgvector)\nSchema 'public' (Catálogo)")]
-        PlatformAPI["API da Plataforma (/validate & /examples)"]
-        McpClients["Clientes Externos (Cursor / Claude / IDEs)"]
+        PostgresDB[("PostgreSQL\nSchema 'harness' (pgvector)\nSchema 'public' (Catalog)")]
+        PlatformAPI["Platform API (/validate & /examples)"]
+        McpClients["External Clients (Cursor / Claude / IDEs)"]
     end
 
     ContextNode --> VectorPort
@@ -68,32 +68,32 @@ graph TD
 
 ---
 
-## 3. 🧠 Módulo RAG & Memória Vetorial (`pgvector`)
+## 3. 🧠 RAG Module & Vector Memory (`pgvector`)
 
-### 3.1 DDL da Migração (Alembic no Schema `harness`)
+### 3.1 Migration DDL (Alembic in `harness` Schema)
 
 ```sql
--- 1. Criação do Schema Dedicado
+-- 1. Create Dedicated Schema
 CREATE SCHEMA IF NOT EXISTS harness;
 
--- 2. Habilitação da Extensão Vetorial
+-- 2. Enable Vector Extension
 CREATE EXTENSION IF NOT EXISTS vector;
 
--- 3. Tabela de Memória Semântica
+-- 3. Semantic Memory Table
 CREATE TABLE harness.gold_pipeline_embeddings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     platform_schema_version VARCHAR(20) NOT NULL DEFAULT 'v1.0.0',
     pipeline_type VARCHAR(50) NOT NULL,            -- 'ingestion', 'etl', 'export'
     compute_engine VARCHAR(50) DEFAULT 'spark',    -- 'spark', 'duckdb', 'dbt', etc.
-    description TEXT NOT NULL,                     -- Resumo do pipeline em linguagem natural
-    yaml_content TEXT NOT NULL,                    -- YAML completo válido
-    embedding vector(1536) NOT NULL,               -- Vetor gerado (ex: text-embedding-3-small)
-    is_active BOOLEAN DEFAULT TRUE,                -- Flag para invalidação em schema drift
+    description TEXT NOT NULL,                     -- Natural language pipeline summary
+    yaml_content TEXT NOT NULL,                    -- Full valid YAML
+    embedding vector(1536) NOT NULL,               -- Generated embedding (e.g. text-embedding-3-small)
+    is_active BOOLEAN DEFAULT TRUE,                -- Flag for schema drift invalidation
     last_validated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 4. Índice HNSW para Busca em Baixa Latência (< 5ms)
+-- 4. HNSW Index for Low-Latency Search (< 5ms)
 CREATE INDEX IF NOT EXISTS idx_gold_pipeline_embeddings_hnsw 
 ON harness.gold_pipeline_embeddings USING hnsw (embedding vector_cosine_ops)
 WHERE is_active = TRUE;
@@ -101,74 +101,74 @@ WHERE is_active = TRUE;
 
 ---
 
-### 3.2 Fluxo no `context_node` (Hierárquico com Fallback)
+### 3.2 Flow in `context_node` (Hierarchical with Fallback)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Usuário / Agente
+    actor User as User / Agent
     participant CN as context_node
     participant EP as EmbeddingPort (OpenAI)
     participant VP as VectorStoragePort (Postgres)
     participant AP as PlatformExamplesPort (API)
     participant GN as generator_node
 
-    User->>CN: Prompt: "Ingestão REST com paginação por cursor"
-    CN->>EP: Gerar embedding do prompt
-    EP-->>CN: Retorna vetor [0.012, -0.045, ...]
-    CN->>VP: Busca top-K(2) similares (is_active=True, version='v1.0.0')
+    User->>CN: Prompt: "REST Ingestion with cursor pagination"
+    CN->>EP: Generate prompt embedding
+    EP-->>CN: Returns vector [0.012, -0.045, ...]
+    CN->>VP: Search top-K(2) similar (is_active=True, version='v1.0.0')
     
-    alt Encontrou exemplos vetoriais válidos
-        VP-->>CN: Retorna os 2 melhores YAMLs
-    else Não encontrou ou banco vetorial vazio (Fallback)
+    alt Found valid vector examples
+        VP-->>CN: Returns top 2 YAMLs
+    else Not found or empty vector store (Fallback)
         CN->>AP: GET /v1/harness/gold-examples?type=ingestion
-        AP-->>CN: Retorna exemplos canônicos da API
+        AP-->>CN: Returns canonical API examples
     end
     
-    CN->>GN: Injeta Few-Shot no prompt com precisão cirúrgica
+    CN->>GN: Injects Few-Shot examples into synthesis prompt
 ```
 
 ---
 
-### 3.3 Mecanismo de Auto-Revalidação e Prevenção de Schema Drift
+### 3.3 Auto-Revalidation & Schema Drift Prevention
 
 ```mermaid
 flowchart TD
-    A[Disparo: CLI 'revalidate-memory' ou Job Agendado] --> B[Buscar todos YAMLs em harness.gold_pipeline_embeddings com is_active = TRUE]
-    B --> C[Passar cada YAML pela API: POST /v1/harness/validate]
-    C --> D{O YAML continua 100% válido na Plataforma?}
-    D -- Sim --> E[Atualizar last_validated_at = NOW()]
-    D -- Não (Regra Mudou) --> F[Marcar is_active = FALSE<br/>Registrar warning com os erros da regra]
-    E --> G[Fim do Processo de Auto-Cura]
+    A[Trigger: CLI 'revalidate-memory' or Scheduled Job] --> B[Fetch all YAMLs in harness.gold_pipeline_embeddings with is_active = TRUE]
+    B --> C[Submit each YAML to API: POST /v1/harness/validate]
+    C --> D{Is YAML still 100% valid on Platform?}
+    D -- Yes --> E[Update last_validated_at = NOW()]
+    D -- No (Contract Changed) --> F[Set is_active = FALSE<br/>Log warning with validation errors]
+    E --> G[End of Self-Healing Routine]
     F --> G
 ```
 
 ---
 
-## 4. 🔌 Módulo Servidor MCP (Model Context Protocol)
+## 4. 🔌 MCP Server Module (Model Context Protocol)
 
-### 4.1 Definição de Ferramentas (Tools) do MCP
+### 4.1 MCP Tools Definition
 
-| Tool MCP | Parâmetros de Entrada | Descrição |
+| MCP Tool | Input Parameters | Description |
 |---|---|---|
-| `get_table_schema` | `asset_name: str`, `object_name: str` | Retorna o schema detalhado de uma tabela/API do catálogo com tipos, PKs e policy_tags (PII). |
-| `get_gold_examples` | `pipeline_type: str`, `query: str`, `limit: int = 2` | Busca os exemplos mais aderentes usando RAG semântico no `pgvector` com fallback para a API. |
-| `validate_pipeline_yaml` | `yaml_content: str`, `pipeline_type: str` | Executa a validação determinística na API da plataforma e retorna os erros estruturados. |
-| `generate_pipeline_yaml` | `prompt: str`, `pipeline_type: str \| None` | Executa o grafo completo do LangGraph e retorna o YAML final aprovado e a trilha de auditoria. |
+| `get_table_schema` | `asset_name: str`, `object_name: str` | Returns detailed schema of a catalog table/API with types, primary keys, and policy tags (PII). |
+| `get_gold_examples` | `pipeline_type: str`, `query: str`, `limit: int = 2` | Fetches relevant pipeline examples using pgvector semantic RAG with fallback to the platform API. |
+| `validate_pipeline_yaml` | `yaml_content: str`, `pipeline_type: str` | Executes deterministic validation against the platform API and returns structured errors. |
+| `generate_pipeline_yaml` | `prompt: str`, `pipeline_type: str \| None` | Executes the full LangGraph workflow and returns the approved final YAML and audit trail. |
 
 ---
 
-### 4.2 Definição de Recursos (Resources) do MCP
+### 4.2 MCP Resources Definition
 
-| URI do Resource | Descrição |
+| Resource URI | Description |
 |---|---|
-| `schema://platform/{pipeline_type}` | Retorna o JSON Schema canônico oficial para o tipo de pipeline. |
-| `catalog://assets/{asset_name}` | Lista todos os objetos e tabelas cadastrados no asset especificado. |
-| `audit://executions/{run_id}` | Retorna o arquivo de auditoria (`_audit.json`) e o YAML gerado para a execução. |
+| `schema://platform/{pipeline_type}` | Returns the official canonical JSON Schema for the specified pipeline type. |
+| `catalog://assets/{asset_name}` | Lists all objects and tables registered under the specified asset. |
+| `audit://executions/{run_id}` | Returns the audit file (`_audit.json`) and generated YAML for a specific execution run ID. |
 
 ---
 
-## 5. 📁 Nova Estrutura de Arquivos Proposta
+## 5. 📁 File Structure
 
 ```
 src/
@@ -179,24 +179,24 @@ src/
 │       └── pipeline_spec.py
 ├── infrastructure/
 │   ├── adapters/
-│   │   ├── pgvector_storage.py      # [NOVO] Implementa VectorStoragePort (schema 'harness')
-│   │   ├── openai_embeddings.py     # [NOVO] Implementa EmbeddingPort
+│   │   ├── pgvector_storage.py      # Implements VectorStoragePort ('harness' schema)
+│   │   ├── openai_embeddings.py     # Implements EmbeddingPort
 │   │   ├── db_schema_reader.py
 │   │   └── http_platform_validation.py
 │   ├── db/
-│   │   ├── alembic/                 # [NOVO] Migrations gerenciadas pelo Alembic
+│   │   ├── alembic/                 # Migrations managed by Alembic
 │   │   └── alembic.ini
 │   ├── mcp/
 │   │   ├── __init__.py
-│   │   ├── server.py                # [NOVO] Servidor FastMCP (stdio e SSE)
-│   │   ├── tools.py                 # [NOVO] Mapeamento de Tools MCP
-│   │   └── resources.py             # [NOVO] Mapeamento de Resources MCP
-│   └── cli.py                       # + Comandos: reindex-gold-examples, revalidate-memory
+│   │   ├── server.py                # FastMCP server (stdio and SSE)
+│   │   ├── tools.py                 # MCP Tools mapping
+│   │   └── resources.py             # MCP Resources mapping
+│   └── cli.py                       # + Commands: reindex-gold-examples, revalidate-memory
 tests/
 ├── unit/
-│   ├── test_pgvector_storage.py     # [NOVO] Testes unitários com mocks vetoriais
-│   ├── test_embeddings_adapter.py   # [NOVO] Testes do gerador de embeddings
-│   └── test_mcp_server.py           # [NOVO] Testes de ferramentas e recursos MCP
+│   ├── test_pgvector_storage.py     # Unit tests with vector mocks
+│   ├── test_embeddings_adapter.py   # Embedding generator tests
+│   └── test_mcp_server.py           # MCP tools and resources tests
 └── integration/
-    └── test_rag_context_node.py     # [NOVO] Teste de integração do context_node + RAG
+    └── test_rag_context_node.py     # Integration test for context_node + RAG
 ```
